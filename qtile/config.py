@@ -290,20 +290,20 @@ scratchpads.extend(
 scratchpads.extend(
     [
         {"key": key, "cmd": f'emacs --eval "{cmd}"', "opacity": 0.9}
-        for key, cmd in [("c", "(full-calc)"), ("m", "(mu4e)"), ("a", "(org-agenda)")]
+        for key, cmd in [("c", "(full-calc)"), ("m", "(mu4e)")]
     ]
 )
 
 scratchpads.append(
     {
-        "key": "b",
-        "cmd": my_browser,
-        "opacity": 0.9,
-        "height": 0.6,
+        "key": "a",
+        "cmd": f"{my_browser} http://localhost:5600",
+        "opacity": 1.0,
+        "height": 0.8,
         "width": 0.6,
         "centered": False,
-        "x": 0.4,
-        "y": 0.4,
+        "x": 0.2,
+        "y": 0.2,
     }
 )
 
@@ -325,8 +325,8 @@ def get_dropdown(
     cmd: str,
     modifiers: list[str] = ["mod1", "mod4"],
     opacity: float = 0.8,
-    height: float = 0.65,
-    width: float = 0.4,
+    height: float = 0.8,
+    width: float = 0.5,
     centered: bool = True,
     x: float = 0,
     y: float = 0,
