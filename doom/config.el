@@ -34,6 +34,7 @@
        '("\*mu4e.*\*"
          "\*Article\*"
          "\*elfeed.*\*"
+         "\*Org Agenda\*"
          ))
 
 (setq! frame-title-format

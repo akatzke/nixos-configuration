@@ -383,10 +383,12 @@ Ignore certain special buffers from being excluded in projects.
        '("\*mu4e.*\*"
          "\*Article\*"
          "\*elfeed.*\*"
+         "\*Org Agenda\*"
          ))
 #+end_src
 
 In addition to the buffer name, also show the project when in a project.
+Exclude this project name in certain special buffers, like =*Org Agenda*=.
 This is primarily useful for [[id:436138a8-5f18-4f66-b8aa-a06c6044a4fa][ActivityWatch]], as it uses the window title of applications for automatic classification.
 #+begin_src elisp
 (setq! frame-title-format
