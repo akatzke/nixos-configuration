@@ -108,6 +108,7 @@
 (use-package! doom-snippets
   :defer t
   :init
+  (setq! yas-indent-line 'fixed)
   (map! :leader
         :desc "Add new snippet"
         "i n" #'yas-new-snippet)

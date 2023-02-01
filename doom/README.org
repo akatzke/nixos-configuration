@@ -518,6 +518,7 @@ Add key-binds for [[id:92961394-1c71-4e72-a017-4cf9f1078309][yas]]
 (use-package! doom-snippets
   :defer t
   :init
+  (setq! yas-indent-line 'fixed)
   (map! :leader
         :desc "Add new snippet"
         "i n" #'yas-new-snippet)
