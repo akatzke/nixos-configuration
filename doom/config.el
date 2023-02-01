@@ -166,6 +166,10 @@
 
 (map! :nvig "C-'" #'er/expand-region)
 
+(map! :leader
+      :desc "Reload current direnv" "hrd" #'envrc-reload
+      :desc "Reload all direnvs" "hrD" #'envrc-reload-all)
+
 (setq! +evil-want-o/O-to-continue-comments nil)
 
 (add-hook! 'evil-command-window-mode-hook #'turn-off-smartparens-mode)

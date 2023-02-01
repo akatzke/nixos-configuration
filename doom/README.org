@@ -612,6 +612,13 @@ Map ~expand-region~, which lets you select a select a region by semantic increme
 (map! :nvig "C-'" #'er/expand-region)
 #+end_src
 
+Add a keybind for [[fn:envrc-reload]] and [[fn:envrc-reload-all]], which reload the [[id:97596a76-f045-4d55-9acb-7c70d4407d0d][direnv]] environment of the current / all buffer(s).
+#+begin_src elisp
+(map! :leader
+      :desc "Reload current direnv" "hrd" #'envrc-reload
+      :desc "Reload all direnvs" "hrD" #'envrc-reload-all)
+#+end_src
+
 ** Evil
 
 Stop evil-mode from also inserting another comment symbol when inserting a new line using [[kbd:][o]] or [[kbd:][O]].
