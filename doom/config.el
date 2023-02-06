@@ -495,6 +495,9 @@ to manually add one myself."
   (setq org-media-note-screenshot-image-dir "~/org-roam/.images/")  ;; Folder to save screenshot
   )
 
+(map! :leader
+      :desc "Bibliography" "nb" #'citar-open)
+
 (solaire-global-mode -1)
 
 (with-eval-after-load 'ox-latex

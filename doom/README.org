@@ -1117,6 +1117,13 @@ Configure [[id:31f1301d-a796-407d-b359-e8fff85d0ca5][org-media-note]], a package
   )
 #+end_src
 
+Remap key to open [[id:207bce48-fdb1-4a9f-a877-d005e615025f][citar]] notes to opening full [[id:207bce48-fdb1-4a9f-a877-d005e615025f][citar]] entries instead.
+/This way, when selecting an entry, one can select to open its corresponding notes or source, among other things./
+#+begin_src elisp
+(map! :leader
+      :desc "Bibliography" "nb" #'citar-open)
+#+end_src
+
 *** LaTeX in Org-Mode
 
 Don't use [[id:2c5e7071-01a7-41e1-87a7-a66c074b9d80][solaire-mode]], since it causes LaTeX-previews to look out of place
