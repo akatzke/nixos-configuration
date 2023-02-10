@@ -1117,8 +1117,10 @@ shellAliases = {
   cp = "cp -i";
   # make ls look nices
   ls = "exa -l --color=always --group-directories-first";
-  # ledger budget alias
+  # ledger aliases
+  balance="ledger --empty -f ~/ledger/main.ledger bal -X EUR";
   budget="ledger --empty -f ~/ledger/main.ledger bal ^budget -X EUR";
+  ledgerviz="nix run gitlab:joopitz/ledgerviz --";
   # emacs as a client, whilst swallowing the terminal
   em="devour emacsclient -c";
   # interactively cd utilizing fasd
