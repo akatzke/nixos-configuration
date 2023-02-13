@@ -162,7 +162,7 @@ nix.settings.auto-optimise-store = true;
 system.autoUpgrade = {
   enable = true;
   flake = "/etc/nixos";
-  flags = [ "--update-input" "nixpkgs" ];
+  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" ];
 };
 
 boot = {
