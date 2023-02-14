@@ -87,7 +87,6 @@
     packages = with pkgs; [
       firefox
       kate
-      pinentry-qt
     #  thunderbird
     ];
   };
@@ -113,6 +112,7 @@
   # programs.mtr.enable = true;
   programs.gnupg.agent = {
     enable = true;
+    pinentryFlavor = "qt";
     enableSSHSupport = true;
   };
 

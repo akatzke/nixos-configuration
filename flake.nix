@@ -32,7 +32,7 @@
             }
           ];
         };
-        nixos = lib.nixosSystem {
+        orpheus = lib.nixosSystem {
           inherit system;
           modules = [
             ./hardware-configuration/orpheus.nix
