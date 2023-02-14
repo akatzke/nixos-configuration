@@ -1554,6 +1554,11 @@ Use [[id:41d896e4-12f0-46e0-9f19-96373229f371][org-roam-ui]] and unpin [[id:795e
 (package! activity-watch-mode)
 #+end_src
 
+#+begin_src elisp
+(package! transient :pin "c2bdf7e12c530eb85476d3aef317eb2941ab9440")
+(package! with-editor :pin "bbc60f68ac190f02da8a100b6fb67cf1c27c53ab")
+#+end_src
+
 ** Notes
 :PROPERTIES:
 :header-args: :results none :tangle no
