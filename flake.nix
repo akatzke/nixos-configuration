@@ -32,6 +32,21 @@
             }
           ];
         };
+        nixos = lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hardware-configuration/orpheus.nix
+            ./system-configuration/orpheus.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = import ./home-manager/hephaestus.nix;
+              };
+            }
+          ];
+        };
       };
     };
 }
