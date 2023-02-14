@@ -1110,9 +1110,10 @@ Configure [[id:31f1301d-a796-407d-b359-e8fff85d0ca5][org-media-note]], a package
 #+begin_src elisp
 (use-package! org-media-note
   :hook (org-mode .  org-media-note-mode)
-  :bind (
-         ("H-v" . org-media-note-hydra/body))  ;; Main entrance
   :config
+  (map! :map org-mode-map
+        :localleader
+        :desc "Media Noter" "mm" #'org-media-note-hydra/body)
   (setq org-media-note-screenshot-image-dir "~/org-roam/.images/")  ;; Folder to save screenshot
   )
 #+end_src

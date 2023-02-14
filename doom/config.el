@@ -489,9 +489,10 @@ to manually add one myself."
 
 (use-package! org-media-note
   :hook (org-mode .  org-media-note-mode)
-  :bind (
-         ("H-v" . org-media-note-hydra/body))  ;; Main entrance
   :config
+  (map! :map org-mode-map
+        :localleader
+        :desc "Media Noter" "mm" #'org-media-note-hydra/body)
   (setq org-media-note-screenshot-image-dir "~/org-roam/.images/")  ;; Folder to save screenshot
   )
 
