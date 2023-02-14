@@ -130,11 +130,6 @@ in {
         "UbuntuMono"
     ]; })
   ];
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 14d";
-  };
   nix.settings.auto-optimise-store = true;
   system.autoUpgrade = {
     enable = true;
@@ -144,16 +139,6 @@ in {
   boot = {
     tmpOnTmpfs = true;
     tmpOnTmpfsSize = "75%";
-  };
-  fileSystems."/home" = {
-    label = "home";
-    fsType = "ext4";
-    options = [ "defaults" ];
-  };
-  fileSystems."/mnt/HDD" = {
-    label = "HDD";
-    fsType = "ntfs";
-    options = [ "defaults" "x-systemd.automount" "noauto" ];
   };
   fileSystems."/mnt/Media" = {
     device = "192.168.178.74:/srv/nfs/Media";
@@ -183,9 +168,6 @@ in {
     devices = import ../.secrets/syncthing/devices.nix;
     folders = import ../.secrets/syncthing/folders.nix;
   };
-  services.udev.packages = [
-    pkgs.qmk-udev-rules
-  ];
   # Enable CUPS to print documents.
   services.printing = {
     enable = true;

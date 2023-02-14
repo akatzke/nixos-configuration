@@ -132,7 +132,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
 
-Opening of the configuration, setting the username as a variable:
+Wrap the configurations, setting the username as a variable:
 #+begin_src nix :noweb yes :tangle system-configuration/core.nix
 { config, pkgs, ... }:
 
@@ -141,7 +141,6 @@ in {
   <<core>>
 }
 #+end_src
-
 #+begin_src nix :noweb yes :tangle system-configuration/hephaestus.nix
 { config, pkgs, ... }:
 
@@ -150,7 +149,6 @@ in {
   <<hephaestus>>
 }
 #+end_src
-
 #+begin_src nix :noweb yes :tangle system-configuration/orpheus.nix
 { config, pkgs, ... }:
 
@@ -457,12 +455,19 @@ fonts.fonts = with pkgs; [
 Enable automatic garbage collection.
 This deletes old (as specified in the ~options~ variable) generations
 and then deletes all unused entries in the nix store.
-Run it once a week.
-#+begin_src nix
+Run it once a week for =Hephaestus= and =Orpheus=, and delete everything older than 14 / 60 days, respectively.
+#+begin_src nix :noweb-ref hephaestus
 nix.gc = {
   automatic = true;
   dates = "weekly";
   options = "--delete-older-than 14d";
+};
+#+end_src
+#+begin_src nix :noweb-ref orpheus
+nix.gc = {
+  automatic = true;
+  dates = "weekly";
+  options = "--delete-older-than 60d";
 };
 #+end_src
 
@@ -513,6 +518,21 @@ boot = {
 Rather than editing =/etc/fstab=, like one usually would to permanently mount a drive,
 use the ~fileSystems~ option.
 
+Mount my media server via ~nfs~.
+Since this requires an internet connection, it is not necessarily a good idea to always mount this on boot.
+Instead, lazy mount it using the ~x-systemd.automount~ option
+#+begin_src nix
+fileSystems."/mnt/Media" = {
+  device = "192.168.178.74:/srv/nfs/Media";
+  fsType = "nfs";
+  options = [ "defaults" "x-systemd.automount" "noauto" "timeo=900" "retrans=5" "_netdev" ];
+};
+#+end_src
+
+**** Hephaestus
+:PROPERTIES:
+:header-args: :noweb-ref hephaestus
+:END:
 Mount home directory
 #+begin_src nix
 fileSystems."/home" = {
@@ -531,16 +551,6 @@ fileSystems."/mnt/HDD" = {
 };
 #+end_src
 
-Mount my media server via ~nfs~.
-Since this requires an internet connection, it is not necessarily a good idea to always mount this on boot.
-Instead, lazy mount it using the ~x-systemd.automount~ option
-#+begin_src nix
-fileSystems."/mnt/Media" = {
-  device = "192.168.178.74:/srv/nfs/Media";
-  fsType = "nfs";
-  options = [ "defaults" "x-systemd.automount" "noauto" "timeo=900" "retrans=5" "_netdev" ];
-};
-#+end_src
 
 ** Graphics Card & Gaming
 :PROPERTIES:
@@ -596,7 +606,7 @@ See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for config
 :END:
 
 Activate the udev rules necessary for flashing QMK firmware onto my keyboard.
-#+begin_src nix
+#+begin_src nix :noweb-ref hephaestus
 services.udev.packages = [
   pkgs.qmk-udev-rules
 ];
