@@ -401,7 +401,7 @@ scratchpads = []
 
 Add a terminal emulator scratchpad.
 #+begin_src python
-scratchpads.append({"key": "Return", "cmd": my_term})
+scratchpads.append({"key": "Return", "cmd": my_term, "autostart": True})
 #+end_src
 
 A scratchpad that rebuilds ~NixOS~ using the current configuration.
@@ -411,14 +411,19 @@ scratchpads.append({"key": "r", "cmd": f"{my_term} -e sudo nixos-rebuild switch"
 
 A scratchpad for controlling audio devices using ~pavucontrol~
 #+begin_src python
-scratchpads.append({"key": "v", "cmd": "pavucontrol"})
+scratchpads.append({"key": "v", "cmd": "pavucontrol", "autostart": True})
 #+end_src
 
 Add GTD related scratchpads.
 #+begin_src python
 scratchpads.extend(
     [
-        {"key": key, "cmd": f"emacs {file}", "opacity": 1.0}
+        {
+            "key": key,
+            "cmd": f"emacsclient -c {file}",
+            "opacity": 1.0,
+            "match": Match(wm_class="emacs"),
+        }
         for key, file in [
             ("i", "~/gtd/inbox.org"),
             ("g", "~/gtd/gtd.org"),
@@ -432,7 +437,12 @@ Add a calculator and mail scratchpad (each in Emacs).
 #+begin_src python
 scratchpads.extend(
     [
-        {"key": key, "cmd": f'emacs --eval "{cmd}"', "opacity": 0.9}
+        {
+            "key": key,
+            "cmd": f'emacsclient -c --eval "{cmd}"',
+            "opacity": 0.9,
+            "match": Match(wm_class="emacs"),
+        }
         for key, cmd in [("c", "(full-calc)"), ("m", "(mu4e)")]
     ]
 )
@@ -450,6 +460,7 @@ scratchpads.append(
         "centered": False,
         "x": 0.4,
         "y": 0.4,
+        "autostart": True
     }
 )
 #+end_src
@@ -466,22 +477,21 @@ scratchpads.append(
         "centered": False,
         "x": 0.2,
         "y": 0.2,
+        "autostart": True
     }
 )
 #+end_src
 
-HACK: Autostart most scratchpads using simulated keypresses, once ~qtile~ has completed its startup.
+HACK: Autostart scratchpads using simulated keypresses, once ~qtile~ has completed its startup.
 From https://www.reddit.com/r/qtile/comments/v4003j/comment/ib1v0pg, with the modification
 of using the =startup_once= hook instead of =startup_complete=, since
 1. The latter will cause the scratchpads to be opened upon reloading ~qtile~.
 2. ~qtile~ locks up while the scratchpads are being created using the =startup_complete= hook; this is not the case for =startup_complete=.
 #+begin_src python
-@hook.subscribe.startup_once
-async def autostart_scratchpads():
+def autostart_scratchpads():
     for scratchpad in scratchpads:
-        # skip nixos rebuild for obvious reasons
-        # and mail, as it will require the unlocking of my password manager
-        if scratchpad["key"] in ["m", "r"]:
+        # do not autostart scratchpads by default
+        if not scratchpad.get("autostart", False):
             continue
 
         qtile.cmd_simulate_keypress(["mod1", "mod4"], scratchpad["key"])
@@ -997,14 +1007,16 @@ def autostart():
                 ],
                 ["element-desktop"],
                 ["discord"],
-                ["emacs", "--daemon"],
                 ["steam-run", f"{HOME}/Downloads/activitywatch/aw-qt"],
+                ["emacs", "--daemon"],
             ]
         )
 
     if applications:
         for application in applications:
             subprocess.Popen(application)
+
+    autostart_scratchpads()
 #+END_SRC
 
 #+RESULTS:

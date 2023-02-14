@@ -270,15 +270,20 @@ keys.extend([
 
 scratchpads = []
 
-scratchpads.append({"key": "Return", "cmd": my_term})
+scratchpads.append({"key": "Return", "cmd": my_term, "autostart": True})
 
 scratchpads.append({"key": "r", "cmd": f"{my_term} -e sudo nixos-rebuild switch"})
 
-scratchpads.append({"key": "v", "cmd": "pavucontrol"})
+scratchpads.append({"key": "v", "cmd": "pavucontrol", "autostart": True})
 
 scratchpads.extend(
     [
-        {"key": key, "cmd": f"emacs {file}", "opacity": 1.0}
+        {
+            "key": key,
+            "cmd": f"emacsclient -c {file}",
+            "opacity": 1.0,
+            "match": Match(wm_class="emacs"),
+        }
         for key, file in [
             ("i", "~/gtd/inbox.org"),
             ("g", "~/gtd/gtd.org"),
@@ -289,7 +294,12 @@ scratchpads.extend(
 
 scratchpads.extend(
     [
-        {"key": key, "cmd": f'emacs --eval "{cmd}"', "opacity": 0.9}
+        {
+            "key": key,
+            "cmd": f'emacsclient -c --eval "{cmd}"',
+            "opacity": 0.9,
+            "match": Match(wm_class="emacs"),
+        }
         for key, cmd in [("c", "(full-calc)"), ("m", "(mu4e)")]
     ]
 )
@@ -304,15 +314,14 @@ scratchpads.append(
         "centered": False,
         "x": 0.2,
         "y": 0.2,
+        "autostart": True
     }
 )
 
-@hook.subscribe.startup_once
-async def autostart_scratchpads():
+def autostart_scratchpads():
     for scratchpad in scratchpads:
-        # skip nixos rebuild for obvious reasons
-        # and mail, as it will require the unlocking of my password manager
-        if scratchpad["key"] in ["m", "r"]:
+        # do not autostart scratchpads by default
+        if not scratchpad.get("autostart", False):
             continue
 
         qtile.cmd_simulate_keypress(["mod1", "mod4"], scratchpad["key"])
@@ -769,11 +778,13 @@ def autostart():
                 ],
                 ["element-desktop"],
                 ["discord"],
-                ["emacs", "--daemon"],
                 ["steam-run", f"{HOME}/Downloads/activitywatch/aw-qt"],
+                ["emacs", "--daemon"],
             ]
         )
 
     if applications:
         for application in applications:
             subprocess.Popen(application)
+
+    autostart_scratchpads()
