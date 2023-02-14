@@ -370,12 +370,19 @@ services.xserver = {
     sddm = {
       enable = true;
     };
-    defaultSession = "none+qtile";
     autoLogin = {
       user = "${user}";
     };
   };
 };
+#+end_src
+
+Set the default sessions.
+#+begin_src nix :noweb-ref hephaestus
+services.xserver.displayManager.defaultSession = "none+qtile";
+#+end_src
+#+begin_src nix :noweb-ref hephaestus
+services.xserver.displayManager.defaultSession = "Plasma (Wayland)";
 #+end_src
 
 Set the X11 keyboard layout.
@@ -550,7 +557,6 @@ fileSystems."/mnt/HDD" = {
   options = [ "defaults" "x-systemd.automount" "noauto" ];
 };
 #+end_src
-
 
 ** Graphics Card & Gaming
 :PROPERTIES:

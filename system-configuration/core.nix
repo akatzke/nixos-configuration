@@ -116,7 +116,6 @@ in {
       sddm = {
         enable = true;
       };
-      defaultSession = "none+qtile";
       autoLogin = {
         user = "${user}";
       };
