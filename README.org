@@ -93,6 +93,23 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
           modules = [
             ./hardware-configuration/hephaestus.nix
             ./system-configuration/configuration.nix
+            ./system-configuration/hephaestus.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = import ./home-manager/hephaestus.nix;
+              };
+            }
+          ];
+        };
+        orpheus = lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hardware-configuration/orpheus.nix
+            ./system-configuration/configuration.nix
+            ./system-configuration/orpheus.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -106,6 +123,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       };
     };
 }
+
 #+end_src
 
 * NixOS System Configuration
@@ -117,6 +135,15 @@ done in the functional ~nix~ language.
 
 Opening of the configuration, setting the username as a variable:
 #+begin_src nix
+{ config, pkgs, ... }:
+
+let
+  user = "yusu";
+in
+{
+#+end_src
+
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 { config, pkgs, ... }:
 
 let
@@ -155,14 +182,25 @@ nix = {
 };
 #+end_src
 
+Set the system's hostname
+#+begin_src nix :tangle system-configuration/hephaestus.nix
+networking.hostName = "hephaestus"; # Define your hostname.
+#+end_src
+#+begin_src nix :tangle system-configuration/orpheus.nix
+networking.hostName = "orpheus"; # Define your hostname.
+#+end_src
+
 This value determines the NixOS release from which the default settings for stateful data,
 like file locations and database versions on your system were taken.
 It‘s perfectly fine and recommended to leave this value at the release version of the first install of this system.
 Before changing this value read the documentation for this option
 (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
 #+name: set_stateVersion
-#+begin_src nix
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 system.stateVersion = "22.05"; # Did you read the comment?
+#+end_src
+#+begin_src nix :tangle system-configuration/orpheus.nix
+system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
 
 ** Bootloader & Kernel
@@ -221,11 +259,18 @@ boot.extraModprobeConfig = ''
 '';
 #+end_src
 
+Setup keyfile
+/This was set on initial installation of the laptop with full disk encryption./
+#+begin_src nix :tangle system-configuration/orpheus.nix
+boot.initrd.secrets = {
+  "/crypto_keyfile.bin" = null;
+};
+#+end_src
+
 ** Networking
 Networking configuration
 #+begin_src nix
 networking = {
-  hostName = "hephaestus"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -306,11 +351,28 @@ services.xserver = {
       user = "${user}";
     };
   };
-  # Set the X11 keyboard layout.
-  # I use the international version of the US layout for my lily58.
+};
+#+end_src
+
+Set the X11 keyboard layout.
+For my desktop, set it to the international version of the US layout for my lily58.
+#+begin_src nix :tangle system-configuration/hephaestus.nix
+services.xserver = {
   layout = "us";
   xkbVariant = "altgr-intl";
 };
+#+end_src
+For the laptop, use programmer's dvorak
+#+begin_src nix :tangle system-configuration/orpheus.nix
+services.xserver = {
+  layout = "us";
+  xkbVariant = "dvp";
+};
+#+end_src
+
+For the laptop, enable touchpad support
+#+begin_src nix :tangle system-configuration/orpheus.nix
+services.xserver.libinput.enable = true;
 #+end_src
 
 ** Gnome
@@ -590,6 +652,12 @@ users.users.${user} = {
 
 ** Close System Configuration
 #+begin_src nix
+}
+#+end_src
+#+begin_src nix :tangle system-configuration/hephaestus.nix
+}
+#+end_src
+#+begin_src nix :tangle system-configuration/orpheus.nix
 }
 #+end_src
 
@@ -1023,7 +1091,7 @@ home.file.".doom.d" = {
 #+end_src
 
 #+name: reload_doom
-#+begin_src sh :tangle ../scripts/reload_doom.sh :shebang "#!/bin/sh"
+#+begin_src sh :tangle ./scripts/reload_doom.sh :shebang "#!/bin/sh"
 DOOM="$HOME/.emacs.d"
 
 if [ ! -d "$DOOM" ]; then

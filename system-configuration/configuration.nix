@@ -22,8 +22,6 @@ nix = {
   };
 };
 
-system.stateVersion = "22.05"; # Did you read the comment?
-
 boot.loader = {
   timeout = 2;
 
@@ -66,7 +64,6 @@ boot.extraModprobeConfig = ''
 '';
 
 networking = {
-  hostName = "hephaestus"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -136,10 +133,6 @@ services.xserver = {
       user = "${user}";
     };
   };
-  # Set the X11 keyboard layout.
-  # I use the international version of the US layout for my lily58.
-  layout = "us";
-  xkbVariant = "altgr-intl";
 };
 
 fonts.fonts = with pkgs; [
