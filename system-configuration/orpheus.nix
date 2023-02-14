@@ -87,6 +87,7 @@
     packages = with pkgs; [
       firefox
       kate
+      pinentry-qt
     #  thunderbird
     ];
   };
