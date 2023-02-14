@@ -554,7 +554,7 @@ fileSystems."/mnt/HDD" = {
 
 ** Graphics Card & Gaming
 :PROPERTIES:
-:header-args: :noweb-ref core
+:header-args: :noweb-ref hephaestus
 :END:
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
 #+begin_src nix

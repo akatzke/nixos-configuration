@@ -23,6 +23,18 @@ in {
     fsType = "ntfs";
     options = [ "defaults" "x-systemd.automount" "noauto" ];
   };
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.opengl.enable = true;
+  hardware.nvidia.powerManagement.enable = true;
+  hardware.nvidia.modesetting.enable = true;
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;       # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall = false;  # Open ports in the firewall for Source Dedicated Server
+  };
+  programs.gamemode = {
+    enable = true;
+  };
   services.udev.packages = [
     pkgs.qmk-udev-rules
   ];
