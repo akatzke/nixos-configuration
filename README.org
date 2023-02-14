@@ -37,7 +37,6 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
   - [[#udev-rules][Udev Rules]]
   - [[#other-services--applications][Other Services & Applications]]
   - [[#user-accounts][User Accounts]]
-  - [[#close-system-configuration][Close System Configuration]]
 - [[#home-manager][Home Manager]]
   - [[#basic-information][Basic Information]]
   - [[#session-variables][Session Variables]]
@@ -92,7 +91,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
           inherit system;
           modules = [
             ./hardware-configuration/hephaestus.nix
-            ./system-configuration/configuration.nix
+            ./system-configuration/core.nix
             ./system-configuration/hephaestus.nix
             home-manager.nixosModules.home-manager
             {
@@ -108,7 +107,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
           inherit system;
           modules = [
             ./hardware-configuration/orpheus.nix
-            ./system-configuration/configuration.nix
+            ./system-configuration/core.nix
             ./system-configuration/orpheus.nix
             home-manager.nixosModules.home-manager
             {
@@ -128,31 +127,44 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
 
 * NixOS System Configuration
 :PROPERTIES:
-:header-args: :results none :tangle system-configuration/configuration.nix
+:header-args: :results none
 :END:
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
 
 Opening of the configuration, setting the username as a variable:
-#+begin_src nix
+#+begin_src nix :noweb yes :tangle system-configuration/core.nix
 { config, pkgs, ... }:
 
-let
-  user = "yusu";
-in
-{
+let user = "yusu";
+in {
+  <<core>>
+}
 #+end_src
 
-#+begin_src nix :tangle system-configuration/hephaestus.nix
+#+begin_src nix :noweb yes :tangle system-configuration/hephaestus.nix
 { config, pkgs, ... }:
 
-let
-  user = "yusu";
-in
-{
+let user = "yusu";
+in {
+  <<hephaestus>>
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle system-configuration/orpheus.nix
+{ config, pkgs, ... }:
+
+let user = "yusu";
+in {
+  <<orpheus>>
+}
 #+end_src
 
 ** General Options
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
+
 Allow nonfree packages from the ~nix~ repository
 #+begin_src nix
 nixpkgs.config.allowUnfree = true;
@@ -183,10 +195,10 @@ nix = {
 #+end_src
 
 Set the system's hostname
-#+begin_src nix :tangle system-configuration/hephaestus.nix
+#+begin_src nix :noweb-ref hephaestus
 networking.hostName = "hephaestus"; # Define your hostname.
 #+end_src
-#+begin_src nix :tangle system-configuration/orpheus.nix
+#+begin_src nix :noweb-ref orpheus
 networking.hostName = "orpheus"; # Define your hostname.
 #+end_src
 
@@ -196,14 +208,18 @@ It‘s perfectly fine and recommended to leave this value at the release version
 Before changing this value read the documentation for this option
 (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
 #+name: set_stateVersion
-#+begin_src nix :tangle system-configuration/hephaestus.nix
+#+begin_src nix :noweb-ref hephaestus
 system.stateVersion = "22.05"; # Did you read the comment?
 #+end_src
-#+begin_src nix :tangle system-configuration/orpheus.nix
+#+begin_src nix :noweb-ref orpheus
 system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
 
 ** Bootloader & Kernel
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
+
 Configure the bootloader.
 If the timeout set here is not being respected within the ~UEFI~ boot menu, press [[kbd:][Shift-t]] until a message appears that says that the timeout is being determined by the configuration file.
 #+begin_src nix
@@ -261,13 +277,17 @@ boot.extraModprobeConfig = ''
 
 Setup keyfile
 /This was set on initial installation of the laptop with full disk encryption./
-#+begin_src nix :tangle system-configuration/orpheus.nix
+#+begin_src nix :noweb-ref orpheus
 boot.initrd.secrets = {
   "/crypto_keyfile.bin" = null;
 };
 #+end_src
 
 ** Networking
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
+
 Networking configuration
 #+begin_src nix
 networking = {
@@ -307,6 +327,9 @@ services.mullvad-vpn.enable = true;
 #+end_src
 
 ** Locale Settings
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 #+begin_src nix
 # Set your time zone.
 time.timeZone = "Europe/Berlin";
@@ -327,6 +350,9 @@ i18n.extraLocaleSettings = {
 #+end_src
 
 ** X Server (DE, Window Manager, Login Manager, Keyboard Layout)
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 
 #+begin_src nix
 services.xserver = {
@@ -356,14 +382,14 @@ services.xserver = {
 
 Set the X11 keyboard layout.
 For my desktop, set it to the international version of the US layout for my lily58.
-#+begin_src nix :tangle system-configuration/hephaestus.nix
+#+begin_src nix :noweb-ref hephaestus
 services.xserver = {
   layout = "us";
   xkbVariant = "altgr-intl";
 };
 #+end_src
 For the laptop, use programmer's dvorak
-#+begin_src nix :tangle system-configuration/orpheus.nix
+#+begin_src nix :noweb-ref orpheus
 services.xserver = {
   layout = "us";
   xkbVariant = "dvp";
@@ -371,7 +397,7 @@ services.xserver = {
 #+end_src
 
 For the laptop, enable touchpad support
-#+begin_src nix :tangle system-configuration/orpheus.nix
+#+begin_src nix :noweb-ref orpheus
 services.xserver.libinput.enable = true;
 #+end_src
 
@@ -409,6 +435,9 @@ services.udev.packages = with pkgs; [
 #+end_src
 
 ** Fonts
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 Even though fonts are available as ~nix~ packages, we need to load them like this so that other applications can load them.
 #+begin_src nix
 fonts.fonts = with pkgs; [
@@ -422,6 +451,9 @@ fonts.fonts = with pkgs; [
 #+end_src
 
 ** Storage Optimization
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 Enable automatic garbage collection.
 This deletes old (as specified in the ~options~ variable) generations
 and then deletes all unused entries in the nix store.
@@ -442,13 +474,16 @@ e.g. updating the system.
 nix.settings.auto-optimise-store = true;
 #+end_src
 Also note that this only affects /newly created/ files, so, to optimize the entire store, one has to run the optimization manually, i.e. through
-#+begin_src sh :tangle no
+#+begin_src sh :noweb-ref no
 sudo nix-store --optimize
 #+end_src
 This operation can take a *long* time, depending on the current size of the store
 (took about 22 minutes on my machine, to go from around 155 GB to 115 GB).
 
 ** Automatic Updates
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 Update the system every day.
 This is relatively safe to do when using the stable branch of ~NixOS~, since there are no feature updates or breaking changes.
 #+begin_src nix
@@ -460,6 +495,9 @@ system.autoUpgrade = {
 #+end_src
 
 ** File System
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 Mount the =/tmp= folder as a ~tmpfs~, making it be stored in RAM instead of on the primary storage device.
 This increases access speed to temporary files and makes them ephemeral, as they will be deleted when the system loses power.
 Using the ~tmpOnTmpfsSize~ option, the exact size of this temporary file system can be set.
@@ -505,6 +543,9 @@ fileSystems."/mnt/Media" = {
 #+end_src
 
 ** Graphics Card & Gaming
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
 #+begin_src nix
 services.xserver.videoDrivers = [ "nvidia" ];
@@ -530,6 +571,9 @@ programs.gamemode = {
 #+end_src
 
 ** Syncthing
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 Use [[https://syncthing.net/][Syncthing]] for automatic file synchronization, primarily with the local media server.
 #+begin_src nix
 services.syncthing = {
@@ -547,6 +591,9 @@ services.syncthing = {
 See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for configuration of the devices and folders.
 
 ** Udev Rules
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 
 Activate the udev rules necessary for flashing QMK firmware onto my keyboard.
 #+begin_src nix
@@ -556,6 +603,9 @@ services.udev.packages = [
 #+end_src
 
 ** Other Services & Applications
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 #+begin_src nix
 # Enable CUPS to print documents.
 services.printing = {
@@ -640,6 +690,9 @@ services.languagetool = {
 #+end_src
 
 ** User Accounts
+:PROPERTIES:
+:header-args: :noweb-ref core
+:END:
 #+begin_src nix
 # Define a user account. Don't forget to set a password with ‘passwd’.
 users.users.${user} = {
@@ -648,17 +701,6 @@ users.users.${user} = {
   extraGroups = [ "networkmanager" "wheel" ];
   shell = pkgs.fish;
 };
-#+end_src
-
-** Close System Configuration
-#+begin_src nix
-}
-#+end_src
-#+begin_src nix :tangle system-configuration/hephaestus.nix
-}
-#+end_src
-#+begin_src nix :tangle system-configuration/orpheus.nix
-}
 #+end_src
 
 * Home Manager

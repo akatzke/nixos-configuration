@@ -21,7 +21,7 @@
           inherit system;
           modules = [
             ./hardware-configuration/hephaestus.nix
-            ./system-configuration/configuration.nix
+            ./system-configuration/core.nix
             ./system-configuration/hephaestus.nix
             home-manager.nixosModules.home-manager
             {
@@ -37,7 +37,7 @@
           inherit system;
           modules = [
             ./hardware-configuration/orpheus.nix
-            ./system-configuration/configuration.nix
+            ./system-configuration/core.nix
             ./system-configuration/orpheus.nix
             home-manager.nixosModules.home-manager
             {
