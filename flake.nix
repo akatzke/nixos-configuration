@@ -20,14 +20,14 @@
         hephaestus = lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration.nix
-            ./configuration.nix
+            ./hardware-configuration/hephaestus.nix
+            ./system-configuration/configuration.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.yusu = import ./hephaestus-home.nix;
+                users.yusu = import ./home-manager/hephaestus.nix;
               };
             }
           ];

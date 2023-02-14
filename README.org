@@ -10,7 +10,7 @@ While this configuration is meant to be used on ~NixOS~, it is entirely possible
 For example, simply moving the files contained in [[file:./doom]] to the ~Doom-Emacs~ configuration folder (=~/.doom.d= by default),
 "installs" my ~Emacs~ configuration (modulo installing ~Doom-Emacs~ and the contained packages).
 
-Even though almost the entirety of the source code blocks gets exported to the ~nix~ files [[file:configuration.nix]] (the system-wide configuration) and [[file:hephaestus-home.nix]] (the user-configuration for my desktop PC),
+Even though almost the entirety of the source code blocks gets exported to the ~nix~ files [[file:system-configuration/configuration.nix]] (the system-wide configuration) and [[file:home-manager/hephaestus.nix]] (the user-configuration for my desktop PC),
 we can leverage the power of literate programming to write in e.g. ~bash~ with all expected editing features in Emacs and then simply export them as block-comment to this file.
 
 Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture of essentially everything is highly volatile and all configurations here are a work-in-progress.
@@ -68,7 +68,7 @@ You may note that sub-projects, like my ~Qtile~ configuration in [[file:./qtile]
 
 While ~Nix Flakes~ are still considered "experimental", they are widely used by this point and it seems doubtful that they will change in such a manner as to completely break.
 
-#+begin_src nix
+#+begin_src nix :tangle flake.nix
 {
   description = "My NixOS System Configuration";
 
@@ -91,14 +91,14 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
         hephaestus = lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration.nix
-            ./configuration.nix
+            ./hardware-configuration/hephaestus.nix
+            ./system-configuration/configuration.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.yusu = import ./hephaestus-home.nix;
+                users.yusu = import ./home-manager/hephaestus.nix;
               };
             }
           ];
@@ -110,7 +110,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
 
 * NixOS System Configuration
 :PROPERTIES:
-:header-args: :results none :tangle configuration.nix
+:header-args: :results none :tangle system-configuration/configuration.nix
 :END:
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
@@ -478,8 +478,8 @@ services.syncthing = {
   group = "users";
   overrideDevices = false;     # overrides any devices added or deleted through the WebUI
   overrideFolders = false;     # overrides any folders added or deleted through the WebUI
-  devices = import ./.secrets/syncthing/devices.nix;
-  folders = import ./.secrets/syncthing/folders.nix;
+  devices = import ../.secrets/syncthing/devices.nix;
+  folders = import ../.secrets/syncthing/folders.nix;
 };
 #+end_src
 See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for configuration of the devices and folders.
@@ -595,7 +595,7 @@ users.users.${user} = {
 
 * Home Manager
 :PROPERTIES:
-:header-args: :results none :tangle hephaestus-home.nix
+:header-args: :results none :tangle home-manager/hephaestus.nix
 :END:
 
 In this section, we use Home Manager to configure the home user's environment.
@@ -642,7 +642,7 @@ Link directories that are not directly related to the configuration of packages 
 This folder includes any scripts, to be used stand-alone or in applications, such as [[Qtile]].
 #+begin_src nix
 xdg.configFile."scripts" = {
-  source = ./scripts;
+  source = ../scripts;
   recursive = true;
 };
 #+end_src
@@ -650,7 +650,7 @@ xdg.configFile."scripts" = {
 Link the secret (and encrypted) [[file:.secrets/.authinfo.gpg][.authinfo.gpg]] file, which stores logins that [[id:6288c98c-cef6-42a1-ac0c-96952ad5a385][Doom-Emacs]] shall remember.
 #+begin_src nix
 home.file.".authinfo.gpg" = {
-  source = ./.secrets/.authinfo.gpg;
+  source = ../.secrets/.authinfo.gpg;
 };
 #+end_src
 
@@ -978,7 +978,7 @@ See [[id:37e5a77a-4c07-43d8-a5af-ef3a6ebde2ad][secret configuration]] for the sp
 #+begin_src nix
 programs.rbw = {
   enable = true;
-  settings = import ./.secrets/bitwarden_settings.nix;
+  settings = import ../.secrets/bitwarden_settings.nix;
 };
 #+end_src
 
@@ -1017,13 +1017,13 @@ However, I do not store in my dotfiles. Instead, it is at =/etc/nixos/doom=, so 
 The script [[reload_doom]] below, which can be run automatically on file changes within the doom directory, syncs doom configuration changes.
 #+begin_src nix
 home.file.".doom.d" = {
-  source = ./doom;
+  source = ../doom;
   recursive = true;
 };
 #+end_src
 
 #+name: reload_doom
-#+begin_src sh :tangle ./scripts/reload_doom.sh :shebang "#!/bin/sh"
+#+begin_src sh :tangle ../scripts/reload_doom.sh :shebang "#!/bin/sh"
 DOOM="$HOME/.emacs.d"
 
 if [ ! -d "$DOOM" ]; then
@@ -1047,7 +1047,7 @@ See [[id:87c13fe4-6026-436e-809e-236e74ff0ec4][secret configuration]] for the sp
 #+begin_src nix
 accounts.email = {
   maildirBasePath = "${maildir}";
-  accounts = import ./.secrets/email_accounts.nix;
+  accounts = import ../.secrets/email_accounts.nix;
 };
 
 programs = {
@@ -1323,7 +1323,7 @@ Since Home-Manager does not contain a module for Qtile, simple link the configur
 The literate configuration can be found in [[file:./qtile/README.org]].
 #+begin_src nix :noweb yes
 xdg.configFile."qtile" = {
-  source = ./qtile;
+  source = ../qtile;
   recursive = true;
 };
 #+end_src
@@ -1356,7 +1356,7 @@ Link the directory containing the configuration files for ~river~.
 For the actual configuration of ~river~, see [[file:river/README.org]].
 #+begin_src nix :noweb yes
 xdg.configFile."river" = {
-  source = ./river;
+  source = ../river;
   recursive = true;
 };
 #+end_src

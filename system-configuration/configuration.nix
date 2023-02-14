@@ -211,8 +211,8 @@ services.syncthing = {
   group = "users";
   overrideDevices = false;     # overrides any devices added or deleted through the WebUI
   overrideFolders = false;     # overrides any folders added or deleted through the WebUI
-  devices = import ./.secrets/syncthing/devices.nix;
-  folders = import ./.secrets/syncthing/folders.nix;
+  devices = import ../.secrets/syncthing/devices.nix;
+  folders = import ../.secrets/syncthing/folders.nix;
 };
 
 services.udev.packages = [

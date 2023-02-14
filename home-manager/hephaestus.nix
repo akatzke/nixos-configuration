@@ -19,12 +19,12 @@ home = {
 };
 
 xdg.configFile."scripts" = {
-  source = ./scripts;
+  source = ../scripts;
   recursive = true;
 };
 
 home.file.".authinfo.gpg" = {
-  source = ./.secrets/.authinfo.gpg;
+  source = ../.secrets/.authinfo.gpg;
 };
 
 xdg.mimeApps = {
@@ -306,7 +306,7 @@ programs.autorandr = {
 
 programs.rbw = {
   enable = true;
-  settings = import ./.secrets/bitwarden_settings.nix;
+  settings = import ../.secrets/bitwarden_settings.nix;
 };
 
 programs.direnv = {
@@ -322,7 +322,7 @@ programs.emacs = {
 };
 
 home.file.".doom.d" = {
-  source = ./doom;
+  source = ../doom;
   recursive = true;
 };
 
@@ -332,7 +332,7 @@ services.dunst = {
 
 accounts.email = {
   maildirBasePath = "${maildir}";
-  accounts = import ./.secrets/email_accounts.nix;
+  accounts = import ../.secrets/email_accounts.nix;
 };
 
 programs = {
@@ -533,7 +533,7 @@ services.picom = {
 };
 
 xdg.configFile."qtile" = {
-  source = ./qtile;
+  source = ../qtile;
   recursive = true;
 };
 
@@ -555,7 +555,7 @@ programs.rofi = {
 };
 
 xdg.configFile."river" = {
-  source = ./river;
+  source = ../river;
   recursive = true;
 };
 
