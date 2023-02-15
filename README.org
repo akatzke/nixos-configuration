@@ -79,48 +79,47 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
     };
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      lib = nixpkgs.lib;
-
-    in {
-      nixosConfigurations = {
-        hephaestus = lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hardware-configuration/hephaestus.nix
-            ./system-configuration/core.nix
-            ./system-configuration/hephaestus.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.yusu = import ./home-manager/hephaestus.nix;
-              };
-            }
-          ];
-        };
-        orpheus = lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hardware-configuration/orpheus.nix
-            ./system-configuration/core.nix
-            ./system-configuration/orpheus.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.yusu = import ./home-manager/hephaestus.nix;
-              };
-            }
-          ];
-        };
+  outputs = { nixpkgs, home-manager, ... }: {
+    nixosConfigurations = {
+      hephaestus = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hardware-configuration/hephaestus.nix
+          ./system-configuration/hephaestus.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.yusu = import ./home-manager/hephaestus.nix;
+            };
+          }
+        ];
+      };
+      orpheus = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hardware-configuration/orpheus.nix
+          ./system-configuration/orpheus.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.yusu = import ./home-manager/hephaestus.nix;
+            };
+          }
+        ];
+      };
+      sisyphus = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        modules = [
+          ./hardware-configuration/sisyphus.nix
+          ./system-configuration/sisyphus.nix
+        ];
       };
     };
+  };
 }
 
 #+end_src
@@ -132,29 +131,36 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
 
-Wrap the configurations, setting the username as a variable:
-#+begin_src nix :noweb yes :tangle system-configuration/core.nix
-{ config, pkgs, ... }:
-
-let user = "yusu";
-in {
-  <<core>>
-}
-#+end_src
+Set up the =noweb-ref= tags that shall be included inside of each system configuration:
 #+begin_src nix :noweb yes :tangle system-configuration/hephaestus.nix
 { config, pkgs, ... }:
 
 let user = "yusu";
 in {
+  <<core>>
+  <<desktop>>
   <<hephaestus>>
 }
 #+end_src
+
 #+begin_src nix :noweb yes :tangle system-configuration/orpheus.nix
 { config, pkgs, ... }:
 
 let user = "yusu";
 in {
+  <<core>>
+  <<desktop>>
   <<orpheus>>
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle system-configuration/sisyphus.nix
+{ config, pkgs, ... }:
+
+let user = "yusu";
+in {
+  <<core>>
+  <<sisyphus>>
 }
 #+end_src
 
@@ -199,6 +205,9 @@ networking.hostName = "hephaestus"; # Define your hostname.
 #+begin_src nix :noweb-ref orpheus
 networking.hostName = "orpheus"; # Define your hostname.
 #+end_src
+#+begin_src nix :noweb-ref sisyphus
+networking.hostName = "sisyphus"; # Define your hostname.
+#+end_src
 
 This value determines the NixOS release from which the default settings for stateful data,
 like file locations and database versions on your system were taken.
@@ -209,7 +218,7 @@ Before changing this value read the documentation for this option
 #+begin_src nix :noweb-ref hephaestus
 system.stateVersion = "22.05"; # Did you read the comment?
 #+end_src
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :noweb-ref '(orpheus sisyphus)
 system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
 
@@ -220,7 +229,7 @@ system.stateVersion = "22.11"; # Did you read the comment?
 
 Configure the bootloader.
 If the timeout set here is not being respected within the ~UEFI~ boot menu, press [[kbd:][Shift-t]] until a message appears that says that the timeout is being determined by the configuration file.
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 boot.loader = {
   timeout = 2;
 
@@ -240,17 +249,27 @@ boot.loader = {
   # };
 };
 #+end_src
+For =sisyphus=, use ~U-Boot~ instead.
+#+begin_src nix :noweb-ref sisyphus
+boot.loader = {
+  timeout = 2;
+  # Use the extlinux boot loader. (NixOS wants to enable GRUB by default)
+  grub.enable = false;
+  # Enables the generation of /boot/extlinux/extlinux.conf
+  generic-extlinux-compatible.enable = true;
+};
+#+end_src
 
 Set the Linux kernel version to use.
 I set this to the Zen kernel for my desktop machines, as this is what this version is optimized for.
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 #+end_src
 
-Set the kernel modules
-#+begin_src nix
+Set the kernel modules.
+The following are only needed for desktop machines.
+#+begin_src nix :noweb-ref desktop
 boot.kernelModules = [
-  "kvm-intel"
   # Virtual Camera
   "v4l2loopback"
   # Virtual Microphone, built-in
@@ -259,7 +278,7 @@ boot.kernelModules = [
 #+end_src
 
 Enable v4l2loopback, to use OBS as a virtual camera, following [[https://www.reddit.com/r/NixOS/comments/p8bqvu/comment/htcta90/?utm_source=share&utm_medium=web2x&context=3][this reddit comment]]
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 # Make some extra kernel modules available to NixOS
 boot.extraModulePackages = with config.boot.kernelPackages;
   [ v4l2loopback.out ];
@@ -297,20 +316,6 @@ networking = {
 
   # Enable networking
   networkmanager.enable = true;
-
-  # Open ports in the firewall.
-  firewall = {
-    enable = true;
-    allowedTCPPortRanges = [
-      # GS-/KDE-Connect
-      { from = 1714; to = 1764; }
-    ];
-
-    allowedUDPPortRanges = [
-      # GS-/KDE-Connect
-      { from = 1714; to = 1764; }
-    ];
-  };
 };
 
 
@@ -319,8 +324,25 @@ networking = {
 
 #+end_src
 
+Open ports for ~KDE-Connect~ on desktop machines.
+#+begin_src nix :noweb-ref desktop
+# Open ports in the firewall.
+networking.firewall = {
+  enable = true;
+  allowedTCPPortRanges = [
+    # GS-/KDE-Connect
+    { from = 1714; to = 1764; }
+  ];
+
+  allowedUDPPortRanges = [
+    # GS-/KDE-Connect
+    { from = 1714; to = 1764; }
+  ];
+};
+#+end_src
+
 Enable the Mullvad VPN service
-#+begin_src nix
+#+begin_src nix :noweb-ref hephaestus
 services.mullvad-vpn.enable = true;
 #+end_src
 
@@ -352,7 +374,8 @@ i18n.extraLocaleSettings = {
 :header-args: :noweb-ref core
 :END:
 
-#+begin_src nix
+Only desktop clients require an X server.
+#+begin_src nix :noweb-ref desktop
 services.xserver = {
   # Use the X11 Display Server
   enable = true;
@@ -404,6 +427,18 @@ services.xserver = {
 For the laptop, enable touchpad support
 #+begin_src nix :noweb-ref orpheus
 services.xserver.libinput.enable = true;
+#+end_src
+
+Set keyboard layout for =sisyphus=
+#+begin_src nix :noweb-ref sisyphus
+services.xserver = {
+  layout = "us";
+  xkbVariant = "altgr-intl";
+};
+console = {
+  font = "Lat2-Terminus16";
+  useXkbConfig = true; # use xkbOptions in tty.
+};
 #+end_src
 
 ** Gnome
@@ -477,6 +512,13 @@ nix.gc = {
   options = "--delete-older-than 60d";
 };
 #+end_src
+#+begin_src nix :noweb-ref sisyphus
+nix.gc = {
+  automatic = true;
+  dates = "weekly";
+  options = "--delete-older-than 14d";
+};
+#+end_src
 
 Optimize the ~nix~ store automatically.
 This will cause identical files to be hard-linked, rather than being created multiple times.
@@ -528,7 +570,7 @@ use the ~fileSystems~ option.
 Mount my media server via ~nfs~.
 Since this requires an internet connection, it is not necessarily a good idea to always mount this on boot.
 Instead, lazy mount it using the ~x-systemd.automount~ option
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 fileSystems."/mnt/Media" = {
   device = "192.168.178.74:/srv/nfs/Media";
   fsType = "nfs";
@@ -560,10 +602,10 @@ fileSystems."/mnt/HDD" = {
 
 ** Graphics Card & Gaming
 :PROPERTIES:
-:header-args: :noweb-ref hephaestus
+:header-args: :noweb-ref core
 :END:
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
-#+begin_src nix
+#+begin_src nix :noweb-ref hephaestus
 services.xserver.videoDrivers = [ "nvidia" ];
 hardware.opengl.enable = true;
 hardware.nvidia.powerManagement.enable = true;
@@ -571,7 +613,7 @@ hardware.nvidia.modesetting.enable = true;
 #+end_src
 
 Enable steam on a system level like this, according to https://nixos.wiki/wiki/Steam
-#+begin_src nix
+#+begin_src nix :noweb-ref hephaestus
 programs.steam = {
   enable = true;
   remotePlay.openFirewall = true;       # Open ports in the firewall for Steam Remote Play
@@ -580,7 +622,7 @@ programs.steam = {
 #+end_src
 
 Enable GameMode
-#+begin_src nix
+#+begin_src nix :noweb-ref hephaestus
 programs.gamemode = {
   enable = true;
 };
@@ -600,11 +642,16 @@ services.syncthing = {
   group = "users";
   overrideDevices = false;     # overrides any devices added or deleted through the WebUI
   overrideFolders = false;     # overrides any folders added or deleted through the WebUI
+};
+#+end_src
+
+See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for configuration of the devices and folders.
+#+begin_src nix :noweb-ref desktop
+services.syncthing = {
   devices = import ../.secrets/syncthing/devices.nix;
   folders = import ../.secrets/syncthing/folders.nix;
 };
 #+end_src
-See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for configuration of the devices and folders.
 
 ** Udev Rules
 :PROPERTIES:
@@ -622,7 +669,7 @@ services.udev.packages = [
 :PROPERTIES:
 :header-args: :noweb-ref core
 :END:
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 # Enable CUPS to print documents.
 services.printing = {
   enable = true;
@@ -650,7 +697,7 @@ services.pipewire = {
 #+end_src
 
 Enable Bluetooth support and blueman as a GUI frontend
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 hardware.bluetooth.enable = true;
 services.blueman.enable = true;
 #+end_src
@@ -675,7 +722,7 @@ programs.fish.enable = true;
 
 Enable flatpaks.
 This also requires enabling XDG Desktop Portals.
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 services.flatpak.enable = true;
 xdg.portal = {
   enable = true;
@@ -683,9 +730,9 @@ xdg.portal = {
 };
 #+end_src
 
-Enable docker
-#+begin_src nix
-# virtualisation.docker.enable = true;
+Enable docker for =sisyphus=.
+#+begin_src nix :noweb-ref sisyphus
+virtualisation.docker.enable = true;
 #+end_src
 
 #+begin_src nix
@@ -699,7 +746,7 @@ Enable docker
 #+end_src
 
 Enable LanguageTool, a grammar and spelling checker, used e.g. by [[Emacs]] through [[id:268d8c53-f6b2-475a-a289-afc7399c3079][langtool]].
-#+begin_src nix
+#+begin_src nix :noweb-ref desktop
 services.languagetool = {
   enable = true;
 };

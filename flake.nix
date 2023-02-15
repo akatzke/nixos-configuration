@@ -9,64 +9,45 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      lib = nixpkgs.lib;
-
-    in {
-      nixosConfigurations = {
-        hephaestus = lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hardware-configuration/hephaestus.nix
-            ./system-configuration/core.nix
-            ./system-configuration/desktop.nix
-            ./system-configuration/hephaestus.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.yusu = import ./home-manager/hephaestus.nix;
-              };
-            }
-          ];
-        };
-        orpheus = lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hardware-configuration/orpheus.nix
-            ./system-configuration/core.nix
-            ./system-configuration/desktop.nix
-            ./system-configuration/orpheus.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.yusu = import ./home-manager/hephaestus.nix;
-              };
-            }
-          ];
-        };
-        sisyphus = lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hardware-configuration/sisyphus.nix
-            ./system-configuration/core.nix
-            ./system-configuration/sisyphus.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.yusu = import ./home-manager/hephaestus.nix;
-              };
-            }
-          ];
-        };
+  outputs = { nixpkgs, home-manager, ... }: {
+    nixosConfigurations = {
+      hephaestus = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hardware-configuration/hephaestus.nix
+          ./system-configuration/hephaestus.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.yusu = import ./home-manager/hephaestus.nix;
+            };
+          }
+        ];
+      };
+      orpheus = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hardware-configuration/orpheus.nix
+          ./system-configuration/orpheus.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.yusu = import ./home-manager/hephaestus.nix;
+            };
+          }
+        ];
+      };
+      sisyphus = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        modules = [
+          ./hardware-configuration/sisyphus.nix
+          ./system-configuration/sisyphus.nix
+        ];
       };
     };
+  };
 }
