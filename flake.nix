@@ -22,6 +22,7 @@
           modules = [
             ./hardware-configuration/hephaestus.nix
             ./system-configuration/core.nix
+            ./system-configuration/desktop.nix
             ./system-configuration/hephaestus.nix
             home-manager.nixosModules.home-manager
             {
@@ -38,7 +39,24 @@
           modules = [
             ./hardware-configuration/orpheus.nix
             ./system-configuration/core.nix
+            ./system-configuration/desktop.nix
             ./system-configuration/orpheus.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = import ./home-manager/hephaestus.nix;
+              };
+            }
+          ];
+        };
+        sisyphus = lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hardware-configuration/sisyphus.nix
+            ./system-configuration/core.nix
+            ./system-configuration/sisyphus.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
