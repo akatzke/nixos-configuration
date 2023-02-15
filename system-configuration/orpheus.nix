@@ -7,6 +7,7 @@ in {
   boot.initrd.secrets = {
     "/crypto_keyfile.bin" = null;
   };
+  services.xserver.displayManager.defaultSession = "plasmawayland";
   services.xserver = {
     layout = "us";
     xkbVariant = "dvp";

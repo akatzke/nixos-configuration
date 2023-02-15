@@ -381,8 +381,8 @@ Set the default sessions.
 #+begin_src nix :noweb-ref hephaestus
 services.xserver.displayManager.defaultSession = "none+qtile";
 #+end_src
-#+begin_src nix :noweb-ref hephaestus
-services.xserver.displayManager.defaultSession = "Plasma (Wayland)";
+#+begin_src nix :noweb-ref orpheus
+services.xserver.displayManager.defaultSession = "plasmawayland";
 #+end_src
 
 Set the X11 keyboard layout.
