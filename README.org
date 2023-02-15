@@ -218,7 +218,10 @@ Before changing this value read the documentation for this option
 #+begin_src nix :noweb-ref hephaestus
 system.stateVersion = "22.05"; # Did you read the comment?
 #+end_src
-#+begin_src nix :noweb-ref '(orpheus sisyphus)
+#+begin_src nix :noweb-ref orpheus
+system.stateVersion = "22.11"; # Did you read the comment?
+#+end_src
+#+begin_src nix :noweb-ref sisyphus
 system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
 

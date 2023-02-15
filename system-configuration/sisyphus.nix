@@ -96,6 +96,7 @@ in {
     shell = pkgs.fish;
   };
   networking.hostName = "sisyphus"; # Define your hostname.
+  system.stateVersion = "22.11"; # Did you read the comment?
   boot.loader = {
     timeout = 2;
     # Use the extlinux boot loader. (NixOS wants to enable GRUB by default)
