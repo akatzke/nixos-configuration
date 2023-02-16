@@ -36,7 +36,7 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.yusu = import ./home-manager/hephaestus.nix;
+              users.yusu = import ./home-manager/orpheus.nix;
             };
           }
         ];
@@ -46,6 +46,14 @@
         modules = [
           ./hardware-configuration/sisyphus.nix
           ./system-configuration/sisyphus.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.yusu = import ./home-manager/sisyphus.nix;
+            };
+          }
         ];
       };
     };
