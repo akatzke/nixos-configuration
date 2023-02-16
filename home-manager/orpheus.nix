@@ -549,6 +549,7 @@ in {
     pkgs.glances
     pkgs.zip
     pkgs.unzip
+    pkgs.freshfetch
     pkgs.libreoffice-fresh
     pkgs.thunderbird
     pkgs.mattermost-desktop
@@ -609,7 +610,6 @@ in {
     # for org-media-notes
     pkgs.mpv
     pkgs.feh
-    pkgs.freshfetch
     pkgs.rofi
     
   ];

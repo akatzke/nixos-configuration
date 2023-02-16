@@ -127,6 +127,7 @@ in {
     pkgs.glances
     pkgs.zip
     pkgs.unzip
+    pkgs.freshfetch
     pkgs.pinentry-curses
   ];
 }
