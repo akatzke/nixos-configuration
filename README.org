@@ -323,11 +323,16 @@ networking = {
 
 #+end_src
 
-Open ports for ~KDE-Connect~ on desktop machines.
-#+begin_src nix :noweb-ref desktop
-# Open ports in the firewall.
+Enable the ~nix~ firewall module.
+#+begin_src nix
 networking.firewall = {
   enable = true;
+};
+#+end_src
+
+Open ports for ~KDE-Connect~ on desktop machines.
+#+begin_src nix :noweb-ref desktop
+networking.firewall = {
   allowedTCPPortRanges = [
     # GS-/KDE-Connect
     { from = 1714; to = 1764; }

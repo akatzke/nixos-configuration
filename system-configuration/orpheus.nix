@@ -31,6 +31,9 @@ in {
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
   
+  networking.firewall = {
+    enable = true;
+  };
   # Set your time zone.
   time.timeZone = "Europe/Berlin";
   
@@ -134,9 +137,7 @@ in {
     # https://github.com/umlaeute/v4l2loopback
     options v4l2loopback exclusive_caps=1 card_label="Virtual Camera"
   '';
-  # Open ports in the firewall.
   networking.firewall = {
-    enable = true;
     allowedTCPPortRanges = [
       # GS-/KDE-Connect
       { from = 1714; to = 1764; }

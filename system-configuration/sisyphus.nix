@@ -31,6 +31,9 @@ in {
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
   
+  networking.firewall = {
+    enable = true;
+  };
   # Set your time zone.
   time.timeZone = "Europe/Berlin";
   
