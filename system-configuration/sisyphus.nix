@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
-let user = "yusu";
+let
+  user = "yusu";
+  system = "aarch64-linux";
 in {
   nixpkgs.config.allowUnfree = true;
   nix.extraOptions = ''
@@ -101,6 +103,10 @@ in {
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.fish;
   };
+  services.openssh = {
+    enable = true;
+    permitRootLogin = "no";
+  };
   networking.hostName = "sisyphus"; # Define your hostname.
   system.stateVersion = "22.11"; # Did you read the comment?
   boot.loader = {
@@ -121,8 +127,4 @@ in {
   };
   virtualisation.docker.enable = true;
   services.getty.autologinUser = "${user}";
-  services.openssh = {
-    enable = true;
-    permitRootLogin = "no";
-  };
 }

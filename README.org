@@ -77,13 +77,15 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       url = "github:nix-community/home-manager/release-22.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    agenix.url = "github:ryantm/agenix";
   };
 
-  outputs = { nixpkgs, home-manager, ... }: {
+  outputs = { self, nixpkgs, home-manager, agenix }: {
     nixosConfigurations = {
       hephaestus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          agenix.nixosModules.default
           ./hardware-configuration/hephaestus.nix
           ./system-configuration/hephaestus.nix
           home-manager.nixosModules.home-manager
@@ -99,6 +101,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       orpheus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          agenix.nixosModules.default
           ./hardware-configuration/orpheus.nix
           ./system-configuration/orpheus.nix
           home-manager.nixosModules.home-manager
@@ -114,6 +117,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       sisyphus = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
         modules = [
+          agenix.nixosModules.default
           ./hardware-configuration/sisyphus.nix
           ./system-configuration/sisyphus.nix
           home-manager.nixosModules.home-manager
@@ -143,7 +147,9 @@ Set up the =noweb-ref= tags that shall be included inside of each system configu
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/hephaestus.nix
 { config, pkgs, ... }:
 
-let user = "yusu";
+let
+  user = "yusu";
+  system = "x86_64-linux";
 in {
   <<core>>
   <<desktop>>
@@ -154,7 +160,9 @@ in {
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/orpheus.nix
 { config, pkgs, ... }:
 
-let user = "yusu";
+let
+  user = "yusu";
+  system = "x86_64-linux";
 in {
   <<core>>
   <<desktop>>
@@ -165,7 +173,9 @@ in {
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/sisyphus.nix
 { config, pkgs, ... }:
 
-let user = "yusu";
+let
+  user = "yusu";
+  system = "aarch64-linux";
 in {
   <<core>>
   <<sisyphus>>
@@ -741,10 +751,18 @@ services.getty.autologinUser = "${user}";
 #+end_src
 
 ** SSH
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix
 services.openssh = {
   enable = true;
   permitRootLogin = "no";
+};
+#+end_src
+
+#+begin_src nix :noweb-ref desktop
+services.openssh = {
+  passwordAuthentication = false;
+  kbdInteractiveAuthentication = false;
+  openFirewall = false;
 };
 #+end_src
 
@@ -1272,7 +1290,15 @@ programs.fish.enable = true;
 
 **** Initialization
 When starting an interactive fish shell, use [[https://github.com/K4rakara/freshfetch/tree/ace04ea8b0eb55d1deee6ad2daa3f45cc913f5ab][freshfetch]] to print some system information.
-#+begin_src nix :noweb yes
+#+begin_src nix :noweb yes :noweb-ref hm/desktop
+programs.fish.interactiveShellInit = ''
+  <<fish_init>>
+  set EDITOR devour emacsclient -c
+  set VISUAL devour emacsclient -c
+'';
+#+end_src
+
+#+begin_src nix :noweb yes :noweb-ref hm/sisyphus
 programs.fish.interactiveShellInit = ''
   <<fish_init>>
 '';

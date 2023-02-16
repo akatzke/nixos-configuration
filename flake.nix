@@ -7,13 +7,15 @@
       url = "github:nix-community/home-manager/release-22.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    agenix.url = "github:ryantm/agenix";
   };
 
-  outputs = { nixpkgs, home-manager, ... }: {
+  outputs = { self, nixpkgs, home-manager, agenix }: {
     nixosConfigurations = {
       hephaestus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          agenix.nixosModules.default
           ./hardware-configuration/hephaestus.nix
           ./system-configuration/hephaestus.nix
           home-manager.nixosModules.home-manager
@@ -29,6 +31,7 @@
       orpheus = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          agenix.nixosModules.default
           ./hardware-configuration/orpheus.nix
           ./system-configuration/orpheus.nix
           home-manager.nixosModules.home-manager
@@ -44,6 +47,7 @@
       sisyphus = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
         modules = [
+          agenix.nixosModules.default
           ./hardware-configuration/sisyphus.nix
           ./system-configuration/sisyphus.nix
           home-manager.nixosModules.home-manager

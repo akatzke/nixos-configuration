@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
-let user = "yusu";
+let
+  user = "yusu";
+  system = "x86_64-linux";
 in {
   nixpkgs.config.allowUnfree = true;
   nix.extraOptions = ''
@@ -100,6 +102,10 @@ in {
     description = "${user}";
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.fish;
+  };
+  services.openssh = {
+    enable = true;
+    permitRootLogin = "no";
   };
   boot.loader = {
     timeout = 2;
@@ -212,6 +218,11 @@ in {
   };
   services.languagetool = {
     enable = true;
+  };
+  services.openssh = {
+    passwordAuthentication = false;
+    kbdInteractiveAuthentication = false;
+    openFirewall = false;
   };
   networking.hostName = "orpheus"; # Define your hostname.
   system.stateVersion = "22.11"; # Did you read the comment?
