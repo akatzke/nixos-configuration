@@ -359,7 +359,6 @@ services.mullvad-vpn.enable = true;
 time.timeZone = "Europe/Berlin";
 
 # Select internationalization properties.
-i18n.defaultLocale = "en_US.utf8";
 i18n.extraLocaleSettings = {
   LC_ADDRESS =        "de_DE.utf8";
   LC_IDENTIFICATION = "de_DE.utf8";
@@ -370,6 +369,7 @@ i18n.extraLocaleSettings = {
   LC_PAPER =          "de_DE.utf8";
   LC_TELEPHONE =      "de_DE.utf8";
   LC_TIME =           "de_DE.utf8";
+  LC_ALL =            "en_US.utf8";
 };
 #+end_src
 
@@ -413,8 +413,14 @@ services.xserver.displayManager.defaultSession = "plasmawayland";
 #+end_src
 
 Set the X11 keyboard layout.
-For my desktop, set it to the international version of the US layout for my lily58.
+For my =hephaestus= and =sisyphus=, set it to the international version of the US layout for my lily58.
 #+begin_src nix :noweb-ref hephaestus
+services.xserver = {
+  layout = "us";
+  xkbVariant = "altgr-intl";
+};
+#+end_src
+#+begin_src nix :noweb-ref sisyphus
 services.xserver = {
   layout = "us";
   xkbVariant = "altgr-intl";
@@ -427,22 +433,17 @@ services.xserver = {
   xkbVariant = "dvp";
 };
 #+end_src
-
-For the laptop, enable touchpad support
-#+begin_src nix :noweb-ref orpheus
-services.xserver.libinput.enable = true;
-#+end_src
-
 Set keyboard layout for =sisyphus=
-#+begin_src nix :noweb-ref sisyphus
-services.xserver = {
-  layout = "us";
-  xkbVariant = "altgr-intl";
-};
+#+begin_src nix
 console = {
   font = "Lat2-Terminus16";
   useXkbConfig = true; # use xkbOptions in tty.
 };
+#+end_src
+
+For the laptop, enable touchpad support
+#+begin_src nix :noweb-ref orpheus
+services.xserver.libinput.enable = true;
 #+end_src
 
 ** Gnome

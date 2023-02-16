@@ -35,7 +35,6 @@ in {
   time.timeZone = "Europe/Berlin";
   
   # Select internationalization properties.
-  i18n.defaultLocale = "en_US.utf8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS =        "de_DE.utf8";
     LC_IDENTIFICATION = "de_DE.utf8";
@@ -46,6 +45,11 @@ in {
     LC_PAPER =          "de_DE.utf8";
     LC_TELEPHONE =      "de_DE.utf8";
     LC_TIME =           "de_DE.utf8";
+    LC_ALL =            "en_US.utf8";
+  };
+  console = {
+    font = "Lat2-Terminus16";
+    useXkbConfig = true; # use xkbOptions in tty.
   };
   fonts.fonts = with pkgs; [
     open-sans
