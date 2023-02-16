@@ -540,7 +540,7 @@ in {
       sha256 = "sha256-faeWr1bRhnKsycJY89WqnRv8qIowUmz3EQvDyjtl63w=";
     };
   };
-  home.stateVersion = "22.05";
+  home.stateVersion = "22.11";
   home.packages = [
     pkgs.exa
     pkgs.fzf
@@ -609,12 +609,6 @@ in {
     pkgs.feh
     pkgs.freshfetch
     pkgs.rofi
-    pkgs.heroic
-    pkgs.gamescope
-    pkgs.yuzu-mainline
-    pkgs.prismlauncher
-    pkgs.protonup-ng
-    pkgs.yacreader
-    pkgs.transgui
+    
   ];
 }

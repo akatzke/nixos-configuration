@@ -48,7 +48,6 @@ in {
     LC_ALL =            "en_US.utf8";
   };
   console = {
-    font = "Lat2-Terminus16";
     useXkbConfig = true; # use xkbOptions in tty.
   };
   fonts.fonts = with pkgs; [

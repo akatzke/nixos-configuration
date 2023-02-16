@@ -45,7 +45,6 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
   - [[#xdg-mime-applications][XDG MIME Applications]]
   - [[#configured-packages-dotfiles][Configured Packages (Dotfiles)]]
   - [[#unconfigured-packages][Unconfigured Packages]]
-  - [[#close-home-manager-context][Close Home Manager Context]]
 
 * Hardware Configuration
 
@@ -127,13 +126,13 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
 
 * NixOS System Configuration
 :PROPERTIES:
-:header-args: :results none
+:header-args: :results none :noweb-ref core
 :END:
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
 
 Set up the =noweb-ref= tags that shall be included inside of each system configuration:
-#+begin_src nix :noweb yes :tangle system-configuration/hephaestus.nix
+#+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/hephaestus.nix
 { config, pkgs, ... }:
 
 let user = "yusu";
@@ -144,7 +143,7 @@ in {
 }
 #+end_src
 
-#+begin_src nix :noweb yes :tangle system-configuration/orpheus.nix
+#+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/orpheus.nix
 { config, pkgs, ... }:
 
 let user = "yusu";
@@ -155,7 +154,7 @@ in {
 }
 #+end_src
 
-#+begin_src nix :noweb yes :tangle system-configuration/sisyphus.nix
+#+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/sisyphus.nix
 { config, pkgs, ... }:
 
 let user = "yusu";
@@ -166,10 +165,6 @@ in {
 #+end_src
 
 ** General Options
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
-
 Allow nonfree packages from the ~nix~ repository
 #+begin_src nix
 nixpkgs.config.allowUnfree = true;
@@ -227,10 +222,6 @@ system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
 
 ** Bootloader & Kernel
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
-
 Configure the bootloader.
 If the timeout set here is not being respected within the ~UEFI~ boot menu, press [[kbd:][Shift-t]] until a message appears that says that the timeout is being determined by the configuration file.
 #+begin_src nix :noweb-ref desktop
@@ -305,10 +296,6 @@ boot.initrd.secrets = {
 #+end_src
 
 ** Networking
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
-
 Networking configuration
 #+begin_src nix
 networking = {
@@ -351,9 +338,6 @@ services.mullvad-vpn.enable = true;
 #+end_src
 
 ** Locale Settings
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 #+begin_src nix
 # Set your time zone.
 time.timeZone = "Europe/Berlin";
@@ -374,10 +358,6 @@ i18n.extraLocaleSettings = {
 #+end_src
 
 ** X Server (DE, Window Manager, Login Manager, Keyboard Layout)
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
-
 Only desktop clients require an X server.
 #+begin_src nix :noweb-ref desktop
 services.xserver = {
@@ -436,7 +416,6 @@ services.xserver = {
 Set keyboard layout for =sisyphus=
 #+begin_src nix
 console = {
-  font = "Lat2-Terminus16";
   useXkbConfig = true; # use xkbOptions in tty.
 };
 #+end_src
@@ -448,7 +427,7 @@ services.xserver.libinput.enable = true;
 
 ** Gnome
 :PROPERTIES:
-:header-args: :tangle no
+:header-args: :noweb-ref no
 :END:
 Since I am currently no longer using GNOME, this section is not being tangled into the actual configuration file.
 
@@ -480,9 +459,6 @@ services.udev.packages = with pkgs; [
 #+end_src
 
 ** Fonts
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 Even though fonts are available as ~nix~ packages, we need to load them like this so that other applications can load them.
 #+begin_src nix
 fonts.fonts = with pkgs; [
@@ -496,9 +472,6 @@ fonts.fonts = with pkgs; [
 #+end_src
 
 ** Storage Optimization
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 Enable automatic garbage collection.
 This deletes old (as specified in the ~options~ variable) generations
 and then deletes all unused entries in the nix store.
@@ -540,9 +513,6 @@ This operation can take a *long* time, depending on the current size of the stor
 (took about 22 minutes on my machine, to go from around 155 GB to 115 GB).
 
 ** Automatic Updates
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 Update the system every day.
 This is relatively safe to do when using the stable branch of ~NixOS~, since there are no feature updates or breaking changes.
 #+begin_src nix
@@ -554,9 +524,6 @@ system.autoUpgrade = {
 #+end_src
 
 ** File System
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 Mount the =/tmp= folder as a ~tmpfs~, making it be stored in RAM instead of on the primary storage device.
 This increases access speed to temporary files and makes them ephemeral, as they will be deleted when the system loses power.
 Using the ~tmpOnTmpfsSize~ option, the exact size of this temporary file system can be set.
@@ -606,9 +573,6 @@ fileSystems."/mnt/HDD" = {
 #+end_src
 
 ** Graphics Card & Gaming
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
 #+begin_src nix :noweb-ref hephaestus
 services.xserver.videoDrivers = [ "nvidia" ];
@@ -634,9 +598,6 @@ programs.gamemode = {
 #+end_src
 
 ** Syncthing
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 Use [[https://syncthing.net/][Syncthing]] for automatic file synchronization, primarily with the local media server.
 #+begin_src nix
 services.syncthing = {
@@ -659,10 +620,6 @@ services.syncthing = {
 #+end_src
 
 ** Udev Rules
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
-
 Activate the udev rules necessary for flashing QMK firmware onto my keyboard.
 #+begin_src nix :noweb-ref hephaestus
 services.udev.packages = [
@@ -671,9 +628,6 @@ services.udev.packages = [
 #+end_src
 
 ** Other Services & Applications
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 #+begin_src nix :noweb-ref desktop
 # Enable CUPS to print documents.
 services.printing = {
@@ -758,9 +712,6 @@ services.languagetool = {
 #+end_src
 
 ** User Accounts
-:PROPERTIES:
-:header-args: :noweb-ref core
-:END:
 #+begin_src nix
 # Define a user account. Don't forget to set a password with ‘passwd’.
 users.users.${user} = {
@@ -777,7 +728,6 @@ services.getty.autologinUser = "${user}";
 #+end_src
 
 ** SSH
-
 #+begin_src nix :noweb-ref sisyphus
 services.openssh = {
   enable = true;
@@ -792,21 +742,48 @@ services.openssh = {
 
 * Home Manager
 :PROPERTIES:
-:header-args: :results none :tangle home-manager/hephaestus.nix
+:header-args: :noweb-ref hm/core
 :END:
 
 In this section, we use Home Manager to configure the home user's environment.
 This mostly includes local packages and dotfiles.
 
 Open the Home Manager context, setting variables for the username, the full name, and the mail directory:
-#+begin_src nix
+#+begin_src nix :noweb yes :tangle home-manager/hephaestus.nix :noweb-ref no
 { config, pkgs, ... }:
 let
   user = "yusu";
   maildir = "/home/yusu/.mail";
   name = "Jonas Opitz";
-
 in {
+  <<hm/core>>
+  <<hm/desktop>>
+  <<hm/hephaestus>>
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle home-manager/orpheus.nix :noweb-ref no
+{ config, pkgs, ... }:
+let
+  user = "yusu";
+  maildir = "/home/yusu/.mail";
+  name = "Jonas Opitz";
+in {
+  <<hm/core>>
+  <<hm/desktop>>
+  <<hm/orpheus>>
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle home-manager/sisyphus.nix :noweb-ref no
+{ config, pkgs, ... }:
+let
+  user = "yusu";
+  name = "Jonas Opitz";
+in {
+  <<hm/core>>
+  <<hm/sisyphus>>
+}
 #+end_src
 
 ** Basic Information
@@ -818,13 +795,19 @@ home.homeDirectory = "/home/${user}";
 
 Similarly to [[set_stateVersion]] for ~NixOS~, set the ~stateVersion~ for ~Home Manager~.
 This should not be change after an install.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/hephaestus
 home.stateVersion = "22.05";
+#+end_src
+#+begin_src nix :noweb-ref hm/orpheus
+home.stateVersion = "22.11";
+#+end_src
+#+begin_src nix :noweb-ref hm/sisyphus
+home.stateVersion = "22.11";
 #+end_src
 
 ** Session Variables
 Add Doom-Emacs' and custom binaries to the path.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 home = {
   sessionPath = [
     "/home/${user}/.emacs.d/bin"
@@ -845,7 +828,7 @@ xdg.configFile."scripts" = {
 #+end_src
 
 Link the secret (and encrypted) [[file:.secrets/.authinfo.gpg][.authinfo.gpg]] file, which stores logins that [[id:6288c98c-cef6-42a1-ac0c-96952ad5a385][Doom-Emacs]] shall remember.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 home.file.".authinfo.gpg" = {
   source = ../.secrets/.authinfo.gpg;
 };
@@ -853,7 +836,7 @@ home.file.".authinfo.gpg" = {
 
 ** XDG MIME Applications
 Associate applications with file types and set default applications.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 xdg.mimeApps = {
   enable = true;
   associations = {
@@ -885,7 +868,7 @@ xdg.mimeApps = {
 
 *** Alacritty
 [[https://alacritty.org/][Alacritty]] is my terminal emulator of choice.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 programs.alacritty = {
   enable = true;
   settings = {
@@ -922,7 +905,7 @@ programs.alacritty = {
 
 *** Autorandr
 [[https://github.com/phillipberndt/autorandr#readme][Autorandr]] is a utility for xorg and randr that aids in managing monitor profiles.
-#+begin_src nix :noweb yes
+#+begin_src nix :noweb yes :noweb-ref hm/desktop
 programs.autorandr = {
   enable = true;
   profiles = {
@@ -1172,7 +1155,7 @@ fingerprint = {
 
 *** Bitwarden
 See [[id:37e5a77a-4c07-43d8-a5af-ef3a6ebde2ad][secret configuration]] for the specification of the settings.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 programs.rbw = {
   enable = true;
   settings = import ../.secrets/bitwarden_settings.nix;
@@ -1193,6 +1176,7 @@ programs.direnv = {
 *** Doom-Emacs
 :PROPERTIES:
 :ID:       6288c98c-cef6-42a1-ac0c-96952ad5a385
+:header-args: :noweb-ref hm/desktop
 :END:
 Doom-Emacs is a configuration framework for Emacs, a highly extensible +operating system+ text editor.
 
@@ -1220,7 +1204,7 @@ home.file.".doom.d" = {
 #+end_src
 
 #+name: reload_doom
-#+begin_src sh :tangle ./scripts/reload_doom.sh :shebang "#!/bin/sh"
+#+begin_src sh :tangle ./scripts/reload_doom.sh :shebang "#!/bin/sh" :noweb-ref no
 DOOM="$HOME/.emacs.d"
 
 if [ ! -d "$DOOM" ]; then
@@ -1233,7 +1217,7 @@ $DOOM/bin/doom sync
 
 *** Dunst
 [[id:2231a333-9429-4680-bcfa-dc00d4dd46e2][Dunst]] is a lightweight notification daemon.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 services.dunst = {
   enable = true;
 };
@@ -1241,7 +1225,7 @@ services.dunst = {
 
 *** Email
 See [[id:87c13fe4-6026-436e-809e-236e74ff0ec4][secret configuration]] for the specification of the email accounts.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 accounts.email = {
   maildirBasePath = "${maildir}";
   accounts = import ../.secrets/email_accounts.nix;
@@ -1263,7 +1247,7 @@ services = {
 
 *** Firefox
 The well-known, open source internet browser.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 programs.firefox = {
   enable = true;
 };
@@ -1275,21 +1259,18 @@ One of its primary features are history-based suggestions, completions (even for
 
 **** Installation
 #+begin_src nix
-# Configuration of Fish
-programs.fish = {
-  enable = true;
+programs.fish.enable = true;
 #+end_src
 
 **** Initialization
 When starting an interactive fish shell, use [[https://github.com/K4rakara/freshfetch/tree/ace04ea8b0eb55d1deee6ad2daa3f45cc913f5ab][freshfetch]] to print some system information.
 #+begin_src nix :noweb yes
-interactiveShellInit = ''
+programs.fish.interactiveShellInit = ''
   <<fish_init>>
 '';
 #+end_src
 
-#+name: fish_init
-#+begin_src fish :tangle no
+#+begin_src fish :tangle no :noweb-ref fish_init
 freshfetch
 # Emulates vim's cursor shape behavior
 # Set the normal and visual mode cursors to a block
@@ -1305,7 +1286,7 @@ set fish_cursor_visual block blink
 
 **** Aliases
 #+begin_src nix
-shellAliases = {
+programs.fish.shellAliases = {
   # make df outputs human readable
   df = "df -h";
   # show sizes in human reabable format
@@ -1330,7 +1311,7 @@ shellAliases = {
 **** Functions
 Override the ~fish_user_key_bindings~ function to automatically enable vi key binds whilst keeping =Ctrl+f= for suggestion-completion.
 #+begin_src nix
-functions = {
+programs.fish.functions = {
   fish_user_key_bindings = {
     body = ''
       fish_vi_key_bindings
@@ -1344,7 +1325,7 @@ functions = {
 
 **** Plugins
 #+begin_src nix
-plugins = [
+programs.fish.plugins = [
   # autopair.fish adds automatic completion of paratheses, colons, etc.
   {
     name = "autopair.fish";
@@ -1366,11 +1347,6 @@ plugins = [
   #   };
   # }
 ];
-#+end_src
-
-**** Close Context
-#+begin_src nix
-};
 #+end_src
 
 **** Prompt
@@ -1408,7 +1384,7 @@ programs.starship = {
 *** Gammastep
 [[https://gitlab.com/chinstrap/gammastep][Gammastep]] is a utility that gradually adjusts the color temperature and brightness of the screen,
 based on time or location.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 services.gammastep = {
   enable = false;
   latitude  = 52.5;
@@ -1436,18 +1412,24 @@ Enable [[id:40a977d3-dc46-4888-b3c8-c6dd57bd9fcc][GPG]] related programs and ser
 programs.gpg = {
   enable = true;
 };
-
 services.gpg-agent = {
   enable = true;
-  pinentryFlavor = "qt";
 };
+#+end_src
+
+Set the pinentry application.
+#+begin_src nix :noweb-ref hm/desktop
+services.gpg-agent.pinentryFlavor = "qt";
+#+end_src
+#+begin_src nix :noweb-ref hm/sisyphus
+services.gpg-agent.pinentryFlavor = "curses";
 #+end_src
 
 *** Kde Connect
 [[https://kdeconnect.kde.org/][KDE Connect]] is an application that allows for interactions between devices, e.g. phones and pcs.
 For example, it lets you share the clipboard, send files, and use your phone as a remote.
 Note that in addition to enabling it here, firewall exceptions in [[Networking]] have to be added as well.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 services.kdeconnect = {
   enable = true;
   indicator = true;
@@ -1456,7 +1438,7 @@ services.kdeconnect = {
 
 *** MangoHud
 [[https://github.com/flightlessmango/MangoHud#readme][MangoHud]] is an FPS and general performance overlay for OpenGL and Vulkan applications.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 programs.mangohud = {
   enable = true;
   enableSessionWide = false;
@@ -1467,6 +1449,7 @@ programs.mangohud = {
   };
 };
 #+end_src
+
 *** Numlock
 Enable the Num Lock by default.
 #+begin_src nix
@@ -1476,7 +1459,7 @@ xsession.numlock.enable = true;
 *** OBS
 [[https://obsproject.com/][OBS]] is THE (open source) video recording and live streaming software.
 It can also be used as a [[id:dc74d473-b14a-4fe4-886b-70f2ef47de8a][virtual webcam]], e.g. to crop the output of a camera or apply filters.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 programs.obs-studio = {
   enable = true;
 };
@@ -1484,7 +1467,7 @@ programs.obs-studio = {
 
 *** Picom
 [[id:5668a1ae-defa-434f-bb47-7ab70d1d0297][Picom]] is an X11 compositor.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 services.picom = {
   enable = true;
   backend = "glx";
@@ -1518,7 +1501,7 @@ services.picom = {
 [[id:69a95dd3-413f-4d2e-9d6f-0fdba7f76e9e][Qtile]] is my window manager of choice, since its configuration is easy (for me) and its dynamic window management is useful.
 Since Home-Manager does not contain a module for Qtile, simple link the configuration directories.
 The literate configuration can be found in [[file:./qtile/README.org]].
-#+begin_src nix :noweb yes
+#+begin_src nix :noweb-ref hm/desktop
 xdg.configFile."qtile" = {
   source = ../qtile;
   recursive = true;
@@ -1527,7 +1510,7 @@ xdg.configFile."qtile" = {
 
 *** Rofi
 [[id:74b3949c-8520-43e8-ac26-10e7b3589eb7][rofi]] is an alternative to the popular application launcher ~dmenu~.
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/desktop
 programs.rofi = {
   enable = true;
   font = "Fira Code Nerd Font 10";
@@ -1547,6 +1530,11 @@ programs.rofi = {
 #+end_src
 
 *** River
+:PROPERTIES:
+:header-args: :noweb-ref no
+:END:
+*Currently disabled.*
+
 [[id:67415c24-2de6-44f2-b95b-fdde64582bc4][River]] is a dynamic tiling Wayland compositor.
 
 Link the directory containing the configuration files for ~river~.
@@ -1583,6 +1571,11 @@ river
 #+end_src
 
 *** Kanshi
+:PROPERTIES:
+:header-args: :noweb-ref no
+:END:
+*Currently disabled.*
+
 A Wayland output manager
 
 #+begin_src nix
@@ -1606,13 +1599,15 @@ services.kanshi = {
 #+end_src
 
 *** Vale
+:PROPERTIES:
+:header-args: :noweb-ref hm/desktop
+:END:
 [[id:3780dd1f-073c-4440-a9eb-a771e31c0792][Vale]] is a code-linting style cli for prose.
 Since there is no Home Manager module available, it needs to be installed as a normal package.
 Additionally, we define its configuration file here and link it.
 
 The configuration of vale
-#+name: vale_configuration
-#+begin_src conf :tangle no
+#+begin_src conf :tangle no :noweb-ref vale_configuration
 StylesPath = ".vale"
 MinAlertLevel = suggestion # suggestion, warning or error
 
@@ -1655,22 +1650,41 @@ programs.zoxide = {
 ** Unconfigured Packages
 List of all packages to use that are not directly configured through Home Manager.
 This does not include packages like fish, as there are added automatically through options and configured in [[Dotfiles]].
-#+begin_src nix :noweb yes
+#+begin_src nix
 nixpkgs.config.allowUnfree = true;
+#+end_src
+
+#+begin_src nix :noweb yes :noweb-ref hm/hephaestus
 home.packages = [
-  <<home_packages>>
+  <<hm/pkgs/core>>
+  <<hm/pkgs/desktop>>
+  <<hm/pkgs/hephaestus>>
+];
+#+end_src
+
+#+begin_src nix :noweb yes :noweb-ref hm/orpheus
+home.packages = [
+  <<hm/pkgs/core>>
+  <<hm/pkgs/desktop>>
+  <<hm/pkgs/orpheus>>
+];
+#+end_src
+
+#+begin_src nix :noweb yes :noweb-ref hm/sisyphus
+home.packages = [
+  <<hm/pkgs/core>>
+  <<hm/pkgs/sisyphus>>
 ];
 #+end_src
 
 *** List of Packages
 :PROPERTIES:
-:header-args: :tangle no :noweb yes :noweb-ref home_packages
+:header-args: :tangle no :noweb-ref hm/pkgs/core
 :END:
 
 **** Office, Mail, Messengers
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.libreoffice-fresh
-
 pkgs.thunderbird
 pkgs.mattermost-desktop
 pkgs.element-desktop
@@ -1680,7 +1694,7 @@ pkgs.discord
 #+end_src
 
 **** Gaming
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/hephaestus
 pkgs.heroic
 pkgs.gamescope
 pkgs.yuzu-mainline
@@ -1689,17 +1703,20 @@ pkgs.protonup-ng
 #+end_src
 
 **** Multimedia
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.spotify
 pkgs.jellyfin-media-player
-pkgs.yacreader
 pkgs.okular
+#+end_src
+
+#+begin_src nix :noweb-ref hm/pkgs/hephaestus
+pkgs.yacreader
 pkgs.transgui
 #+end_src
 
 **** CLI Tools
 Controlling media / volume
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.playerctl
 pkgs.pamixer
 pkgs.pavucontrol
@@ -1721,12 +1738,12 @@ pkgs.glances
 #+end_src
 
 CLI for mullvad VPN
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.mullvad
 #+end_src
 
 Swallow terminal when using it to launch GUI applications
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.devour
 #+end_src
 
@@ -1737,15 +1754,19 @@ pkgs.unzip
 #+end_src
 
 **** Others
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 # screenshots
 pkgs.libsForQt5.spectacle
 # qt-based pin entry
 pkgs.pinentry_qt
 #+end_src
 
+#+begin_src nix :noweb-ref hm/pkgs/sisyphus
+pkgs.pinentry-curses
+#+end_src
+
 **** LaTeX
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 (let
   tex = (pkgs.texlive.combine {
     inherit (pkgs.texlive)
@@ -1763,7 +1784,7 @@ in tex) pkgs.biber pkgs.texlab
 
 **** Dependencies
 ***** Doom Emacs
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 # general
 pkgs.fd
 pkgs.ripgrep
@@ -1794,7 +1815,7 @@ pkgs.mpv
 #+end_src
 
 ***** Qtile
-#+begin_src nix
+#+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.feh
 pkgs.freshfetch
 pkgs.rofi
@@ -1802,17 +1823,12 @@ pkgs.rofi
 
 ***** River
 :PROPERTIES:
-:header-args: :tangle no
+:header-args: :noweb-ref no
 :END:
 These are disable for now, since I am not using River.
-
 #+begin_src nix
 pkgs.river
 pkgs.waybar
 pkgs.python3
 #+end_src
 
-** Close Home Manager Context
-#+begin_src nix
-}
-#+end_src
