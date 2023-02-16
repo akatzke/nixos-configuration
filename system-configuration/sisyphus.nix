@@ -82,20 +82,6 @@ in {
     overrideDevices = false;     # overrides any devices added or deleted through the WebUI
     overrideFolders = false;     # overrides any folders added or deleted through the WebUI
   };
-  environment.systemPackages = [
-    pkgs.vim
-    pkgs.wget
-    pkgs.git
-    pkgs.git-crypt
-  ];
-  programs.fish.enable = true;
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.${user} = {
     isNormalUser = true;
@@ -111,6 +97,20 @@ in {
     enable = true;
     permitRootLogin = "no";
   };
+  environment.systemPackages = [
+    pkgs.vim
+    pkgs.wget
+    pkgs.git
+    pkgs.git-crypt
+  ];
+  programs.fish.enable = true;
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
   networking.hostName = "sisyphus"; # Define your hostname.
   system.stateVersion = "22.11"; # Did you read the comment?
   boot.loader = {
@@ -129,6 +129,11 @@ in {
     dates = "weekly";
     options = "--delete-older-than 14d";
   };
-  virtualisation.docker.enable = true;
   services.getty.autologinUser = "${user}";
+  services.jellyfin = {
+    inherit user;
+    enable = true;
+    openFirewall = true;
+  };
+  virtualisation.docker.enable = true;
 }

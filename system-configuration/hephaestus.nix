@@ -82,20 +82,6 @@ in {
     overrideDevices = false;     # overrides any devices added or deleted through the WebUI
     overrideFolders = false;     # overrides any folders added or deleted through the WebUI
   };
-  environment.systemPackages = [
-    pkgs.vim
-    pkgs.wget
-    pkgs.git
-    pkgs.git-crypt
-  ];
-  programs.fish.enable = true;
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.${user} = {
     isNormalUser = true;
@@ -111,6 +97,20 @@ in {
     enable = true;
     permitRootLogin = "no";
   };
+  environment.systemPackages = [
+    pkgs.vim
+    pkgs.wget
+    pkgs.git
+    pkgs.git-crypt
+  ];
+  programs.fish.enable = true;
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
   boot.loader = {
     timeout = 2;
   
@@ -189,6 +189,11 @@ in {
     devices = import ../.secrets/syncthing/devices.nix;
     folders = import ../.secrets/syncthing/folders.nix;
   };
+  services.openssh = {
+    passwordAuthentication = false;
+    kbdInteractiveAuthentication = false;
+    openFirewall = false;
+  };
   # Enable CUPS to print documents.
   services.printing = {
     enable = true;
@@ -222,11 +227,6 @@ in {
   };
   services.languagetool = {
     enable = true;
-  };
-  services.openssh = {
-    passwordAuthentication = false;
-    kbdInteractiveAuthentication = false;
-    openFirewall = false;
   };
   networking.hostName = "hephaestus"; # Define your hostname.
   system.stateVersion = "22.05"; # Did you read the comment?
