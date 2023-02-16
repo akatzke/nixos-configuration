@@ -37,6 +37,7 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
   - [[#udev-rules][Udev Rules]]
   - [[#other-services--applications][Other Services & Applications]]
   - [[#user-accounts][User Accounts]]
+  - [[#ssh][SSH]]
 - [[#home-manager][Home Manager]]
   - [[#basic-information][Basic Information]]
   - [[#session-variables][Session Variables]]
@@ -766,6 +767,25 @@ users.users.${user} = {
   description = "${user}";
   extraGroups = [ "networkmanager" "wheel" ];
   shell = pkgs.fish;
+};
+#+end_src
+
+Automatically log in to user account on =sisyphus=, without a display manager.
+#+begin_src nix :noweb-ref sisyphus
+services.getty.autologinUser = "${user}";
+#+end_src
+
+** SSH
+
+#+begin_src nix :noweb-ref sisyphus
+services.openssh = {
+  enable = true;
+  permitRootLogin = "no";
+  listenAddresses = [
+    {
+      addr = "192.168.178.1/24";
+    }
+  ];
 };
 #+end_src
 
