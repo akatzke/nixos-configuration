@@ -129,5 +129,6 @@ in {
     pkgs.unzip
     pkgs.freshfetch
     pkgs.pinentry-curses
+    pkgs.blocky
   ];
 }

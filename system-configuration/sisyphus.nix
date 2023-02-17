@@ -128,6 +128,18 @@ in {
     };
   };
   boot.kernelPackages = pkgs.linuxPackages_rpi4;
+  networking.firewall = {
+    allowedTCPPorts = [
+      # blocky
+      53
+      4000
+    ];
+  
+    allowedUDPPorts = [
+      # blocky
+      53
+    ];
+  };
   services.xserver = {
     layout = "us";
     xkbVariant = "altgr-intl";
@@ -147,6 +159,67 @@ in {
     inherit user;
     enable = true;
     openFirewall = true;
+  };
+  services.blocky = {
+    enable = true;
+  
+    settings = {
+      upstream = {
+        default = [
+          "1.1.1.1"
+          "1.0.0.1"
+          "8.8.8.8"
+          "149.112.112.112"
+        ];
+      };
+      upstreamTimeout = "2s";
+      startVerifyUpstream = true;
+  
+      port = 53;
+      httpPort = 4000;
+  
+      connectIPVersion = "dual";
+  
+      blocking = {
+        blackLists = {
+          "ads" = [
+            "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
+            "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+            "http://sysctl.org/cameleon/hosts"
+            "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt"
+            "https://easylist.to/easylist/easylist.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_17_TrackParam/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_4_Social/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_14_Annoyances/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_10_Useful/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_6_German/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt"
+            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt"
+            "https://easylist.to/easylist/easyprivacy.txt"
+            "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt"
+            "https://easylist.to/easylist/fanboy-social.txt"
+            "https://secure.fanboy.co.nz/fanboy-annoyance.txt"
+          ];
+          "fakenews" = [
+            "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts"
+          ];
+        };
+        clientGroupsBlock = {
+          default = [
+            "ads"
+            "fakenews"
+          ];
+        };
+  
+        blockType = "zeroIP";
+      };
+  
+      caching = {
+        prefetching = true;
+      };
+    };
   };
   virtualisation.docker.enable = true;
 }
