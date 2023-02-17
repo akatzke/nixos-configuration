@@ -50,7 +50,6 @@ in {
     LC_PAPER =          "de_DE.utf8";
     LC_TELEPHONE =      "de_DE.utf8";
     LC_TIME =           "de_DE.utf8";
-    LC_ALL =            "en_US.utf8";
   };
   console = {
     useXkbConfig = true; # use xkbOptions in tty.
