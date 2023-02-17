@@ -412,8 +412,9 @@ services.xserver = {
   # Set and configure login manager
   displayManager = {
     sddm = {
-      enable = true;
+      enable = false;
     };
+    lightdm.enable = true;
     autoLogin = {
       user = "${user}";
     };
@@ -450,7 +451,8 @@ services.xserver = {
   xkbVariant = "dvp";
 };
 #+end_src
-Set keyboard layout for =sisyphus=
+
+Also use the keyboard layout above in ~tty~.
 #+begin_src nix
 console = {
   useXkbConfig = true; # use xkbOptions in tty.

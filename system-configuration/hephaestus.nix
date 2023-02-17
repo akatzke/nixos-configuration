@@ -173,8 +173,9 @@ in {
     # Set and configure login manager
     displayManager = {
       sddm = {
-        enable = true;
+        enable = false;
       };
+      lightdm.enable = true;
       autoLogin = {
         user = "${user}";
       };
