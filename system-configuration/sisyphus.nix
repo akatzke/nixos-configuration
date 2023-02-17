@@ -152,6 +152,12 @@ in {
     fsType = "auto";
     options = [ "defaults" "x-systemd.automount" "noauto" ];
   };
+  swapDevices = [
+    {
+      device = "/mnt/HDD/swapfile";
+      size = 8192;
+    }
+  ];
   services.getty.autologinUser = "${user}";
   services.jellyfin = {
     inherit user;

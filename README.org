@@ -633,6 +633,16 @@ fileSystems."/mnt/HDD" = {
 };
 #+end_src
 
+Mount swap partition
+#+begin_src nix
+swapDevices = [
+  {
+    device = "/mnt/HDD/swapfile";
+    size = 8192;
+  }
+];
+#+end_src
+
 ** Graphics Card & Gaming
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
 #+begin_src nix :noweb-ref hephaestus
