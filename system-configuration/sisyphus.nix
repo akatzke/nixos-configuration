@@ -210,6 +210,11 @@ in {
             "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts"
           ];
         };
+        whiteLists = {
+          "ads" = [
+            ../blocky/whitelist.txt
+          ];
+        };
         clientGroupsBlock = {
           default = [
             "ads"
