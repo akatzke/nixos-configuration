@@ -22,6 +22,7 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
 - [[#hardware-configuration][Hardware Configuration]]
 - [[#flake][Flake]]
 - [[#nixos-system-configuration][NixOS System Configuration]]
+  - [[#setup][Setup]]
   - [[#general-options][General Options]]
   - [[#bootloader--kernel][Bootloader & Kernel]]
   - [[#networking][Networking]]
@@ -143,6 +144,8 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
 :END:
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
+
+** Setup
 
 Set up the =noweb-ref= tags that shall be included inside of each system configuration:
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/hephaestus.nix
@@ -270,7 +273,14 @@ boot.loader = {
   # Use the extlinux boot loader. (NixOS wants to enable GRUB by default)
   grub.enable = false;
   # Enables the generation of /boot/extlinux/extlinux.conf
-  generic-extlinux-compatible.enable = true;
+  # generic-extlinux-compatible.enable = true;
+  raspberryPi = {
+    enable = true;
+    version = 4;
+    firmwareConfig = ''
+      boot_delay=1
+    '';
+  };
 };
 #+end_src
 
@@ -278,6 +288,9 @@ Set the Linux kernel version to use.
 I set this to the Zen kernel for my desktop machines, as this is what this version is optimized for.
 #+begin_src nix :noweb-ref desktop
 boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+#+end_src
+#+begin_src nix :noweb-ref sisyphus
+boot.kernelPackages = pkgs.linuxPackages_rpi4;
 #+end_src
 
 Set the kernel modules.
@@ -592,6 +605,19 @@ Mount internal HDD
 fileSystems."/mnt/HDD" = {
   label = "HDD";
   fsType = "ntfs";
+  options = [ "defaults" "x-systemd.automount" "noauto" ];
+};
+#+end_src
+
+**** Sisyphus
+:PROPERTIES:
+:header-args: :noweb-ref sisyphus
+:END:
+Mount external HDD
+#+begin_src nix
+fileSystems."/mnt/HDD" = {
+  device = "/dev/sda1";
+  fsType = "auto";
   options = [ "defaults" "x-systemd.automount" "noauto" ];
 };
 #+end_src

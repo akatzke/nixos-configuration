@@ -118,8 +118,16 @@ in {
     # Use the extlinux boot loader. (NixOS wants to enable GRUB by default)
     grub.enable = false;
     # Enables the generation of /boot/extlinux/extlinux.conf
-    generic-extlinux-compatible.enable = true;
+    # generic-extlinux-compatible.enable = true;
+    raspberryPi = {
+      enable = true;
+      version = 4;
+      firmwareConfig = ''
+        boot_delay=1
+      '';
+    };
   };
+  boot.kernelPackages = pkgs.linuxPackages_rpi4;
   services.xserver = {
     layout = "us";
     xkbVariant = "altgr-intl";
@@ -128,6 +136,11 @@ in {
     automatic = true;
     dates = "weekly";
     options = "--delete-older-than 14d";
+  };
+  fileSystems."/mnt/HDD" = {
+    device = "/dev/sda1";
+    fsType = "auto";
+    options = [ "defaults" "x-systemd.automount" "noauto" ];
   };
   services.getty.autologinUser = "${user}";
   services.jellyfin = {
