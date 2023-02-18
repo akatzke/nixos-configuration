@@ -78,8 +78,9 @@ in {
     configDir = "/home/${user}/.config/syncthing";
     user = "${user}";
     group = "users";
-    overrideDevices = false;     # overrides any devices added or deleted through the WebUI
-    overrideFolders = false;     # overrides any folders added or deleted through the WebUI
+    overrideDevices = true;     # overrides any devices added or deleted through the WebUI
+    overrideFolders = true;     # overrides any folders added or deleted through the WebUI
+    openDefaultPorts = true;    # open the default ports in the firewall
   };
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.${user} = {
