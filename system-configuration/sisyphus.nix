@@ -158,6 +158,10 @@ in {
       size = 8192;
     }
   ];
+  services.syncthing = {
+    devices = import ../.secrets/syncthing/devices.nix;
+    folders = import ../.secrets/syncthing/folders_sisyphus.nix;
+  };
   services.getty.autologinUser = "${user}";
   services.jellyfin = {
     inherit user;

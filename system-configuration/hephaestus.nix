@@ -187,7 +187,7 @@ in {
   };
   services.syncthing = {
     devices = import ../.secrets/syncthing/devices.nix;
-    folders = import ../.secrets/syncthing/folders.nix;
+    folders = import ../.secrets/syncthing/folders_desktop.nix;
   };
   services.openssh = {
     passwordAuthentication = false;

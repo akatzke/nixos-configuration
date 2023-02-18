@@ -686,7 +686,13 @@ See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for config
 #+begin_src nix :noweb-ref desktop
 services.syncthing = {
   devices = import ../.secrets/syncthing/devices.nix;
-  folders = import ../.secrets/syncthing/folders.nix;
+  folders = import ../.secrets/syncthing/folders_desktop.nix;
+};
+#+end_src
+#+begin_src nix :noweb-ref sisyphus
+services.syncthing = {
+  devices = import ../.secrets/syncthing/devices.nix;
+  folders = import ../.secrets/syncthing/folders_sisyphus.nix;
 };
 #+end_src
 
