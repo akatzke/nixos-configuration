@@ -241,7 +241,7 @@ in {
       dbname = "nextcloud";
       adminpassFile = "${pkgs.writeText "adminpass" (builtins.readFile ../.secrets/nextcloud.txt)}";
       adminuser = "root";
-      extraTrustedDomains = ["hephaestus"];
+      extraTrustedDomains = ["hephaestus" "192.168.178.*"];
     };
     home = "/mnt/HDD/nextcloud";
   };
