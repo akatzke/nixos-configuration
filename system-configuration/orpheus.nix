@@ -66,7 +66,7 @@ in {
   system.autoUpgrade = {
     enable = true;
     flake = "/etc/nixos";
-    flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" ];
+    flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--commit-lock-file"];
   };
   boot = {
     tmpOnTmpfs = true;

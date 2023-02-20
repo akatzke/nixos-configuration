@@ -66,7 +66,7 @@ in {
   system.autoUpgrade = {
     enable = true;
     flake = "/etc/nixos";
-    flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" ];
+    flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--commit-lock-file"];
   };
   boot = {
     tmpOnTmpfs = true;
@@ -133,6 +133,9 @@ in {
       # blocky
       53
       4000
+      # nextcloud
+      80
+      443
     ];
   
     allowedUDPPorts = [
@@ -177,8 +180,6 @@ in {
         default = [
           "1.1.1.1"
           "1.0.0.1"
-          "8.8.8.8"
-          "149.112.112.112"
         ];
       };
       upstreamTimeout = "2s";
@@ -192,27 +193,18 @@ in {
       blocking = {
         blackLists = {
           "ads" = [
-            "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
-            "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-            "http://sysctl.org/cameleon/hosts"
-            "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt"
-            "https://easylist.to/easylist/easylist.txt"
             "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt"
-            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt"
             "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_17_TrackParam/filter.txt"
             "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_4_Social/filter.txt"
             "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_14_Annoyances/filter.txt"
-            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_10_Useful/filter.txt"
             "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_6_German/filter.txt"
             "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt"
-            "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt"
-            "https://easylist.to/easylist/easyprivacy.txt"
-            "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt"
-            "https://easylist.to/easylist/fanboy-social.txt"
-            "https://secure.fanboy.co.nz/fanboy-annoyance.txt"
-          ];
-          "fakenews" = [
-            "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts"
+            "https://github.com/uBlockOrigin/uAssets/blob/master/filters/annoyances.txt"
+            "https://github.com/uBlockOrigin/uAssets/blob/master/filters/badware.txt"
+            "https://github.com/uBlockOrigin/uAssets/blob/master/filters/privacy.txt"
+            "https://github.com/uBlockOrigin/uAssets/blob/master/filters/quick-fixes.txt"
+            "https://github.com/uBlockOrigin/uAssets/blob/master/filters/resource-abuse.txt"
+            "https://github.com/uBlockOrigin/uAssets/blob/master/filters/unbreak.txt"
           ];
         };
         whiteLists = {
@@ -223,7 +215,6 @@ in {
         clientGroupsBlock = {
           default = [
             "ads"
-            "fakenews"
           ];
         };
   
@@ -233,7 +224,39 @@ in {
       caching = {
         prefetching = true;
       };
+  
+      queryLog = {
+        type = "csv";
+        target = "/tmp";
+      };
     };
+  };
+  services.nextcloud = {
+    enable = true;
+    hostName = "sisyphus";
+    config = {
+      dbtype = "pgsql";
+      dbuser = "nextcloud";
+      dbhost = "/run/postgresql";
+      dbname = "nextcloud";
+      adminpassFile = "${pkgs.writeText "adminpass" (builtins.readFile ../.secrets/nextcloud.txt)}";
+      adminuser = "root";
+      extraTrustedDomains = ["hephaestus"];
+    };
+    home = "/mnt/HDD/nextcloud";
+  };
+  services.postgresql = {
+    enable = true;
+    ensureDatabases = [ "nextcloud" ];
+    ensureUsers = [
+      { name = "nextcloud";
+        ensurePermissions."DATABASE nextcloud" = "ALL PRIVILEGES";
+      }
+    ];
+  };
+  systemd.services."nextcloud-setup" = {
+    requires = ["postgresql.service"];
+    after = ["postgresql.service"];
   };
   virtualisation.docker.enable = true;
 }

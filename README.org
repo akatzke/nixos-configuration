@@ -371,6 +371,9 @@ networking.firewall = {
     # blocky
     53
     4000
+    # nextcloud
+    80
+    443
   ];
 
   allowedUDPPorts = [
@@ -567,7 +570,7 @@ This is relatively safe to do when using the stable branch of ~NixOS~, since the
 system.autoUpgrade = {
   enable = true;
   flake = "/etc/nixos";
-  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" ];
+  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--commit-lock-file"];
 };
 #+end_src
 
@@ -746,9 +749,13 @@ services.openssh = {
 #+end_src
 
 ** Server
+:PROPERTIES:
+:header-args: :noweb-ref sisyphus
+:END:
 Services that shall run on =sisyphus=.
 
-#+begin_src nix :noweb-ref sisyphus
+*** Jellyfin
+#+begin_src nix
 services.jellyfin = {
   inherit user;
   enable = true;
@@ -756,7 +763,8 @@ services.jellyfin = {
 };
 #+end_src
 
-#+begin_src nix :noweb-ref sisyphus
+*** Blocky
+#+begin_src nix
 services.blocky = {
   enable = true;
 
@@ -765,8 +773,6 @@ services.blocky = {
       default = [
         "1.1.1.1"
         "1.0.0.1"
-        "8.8.8.8"
-        "149.112.112.112"
       ];
     };
     upstreamTimeout = "2s";
@@ -780,27 +786,18 @@ services.blocky = {
     blocking = {
       blackLists = {
         "ads" = [
-          "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
-          "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-          "http://sysctl.org/cameleon/hosts"
-          "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt"
-          "https://easylist.to/easylist/easylist.txt"
           "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt"
-          "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt"
           "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_17_TrackParam/filter.txt"
           "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_4_Social/filter.txt"
           "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_14_Annoyances/filter.txt"
-          "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_10_Useful/filter.txt"
           "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_6_German/filter.txt"
           "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt"
-          "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt"
-          "https://easylist.to/easylist/easyprivacy.txt"
-          "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt"
-          "https://easylist.to/easylist/fanboy-social.txt"
-          "https://secure.fanboy.co.nz/fanboy-annoyance.txt"
-        ];
-        "fakenews" = [
-          "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts"
+          "https://github.com/uBlockOrigin/uAssets/blob/master/filters/annoyances.txt"
+          "https://github.com/uBlockOrigin/uAssets/blob/master/filters/badware.txt"
+          "https://github.com/uBlockOrigin/uAssets/blob/master/filters/privacy.txt"
+          "https://github.com/uBlockOrigin/uAssets/blob/master/filters/quick-fixes.txt"
+          "https://github.com/uBlockOrigin/uAssets/blob/master/filters/resource-abuse.txt"
+          "https://github.com/uBlockOrigin/uAssets/blob/master/filters/unbreak.txt"
         ];
       };
       whiteLists = {
@@ -811,7 +808,6 @@ services.blocky = {
       clientGroupsBlock = {
         default = [
           "ads"
-          "fakenews"
         ];
       };
 
@@ -821,7 +817,52 @@ services.blocky = {
     caching = {
       prefetching = true;
     };
+
+    queryLog = {
+      type = "csv";
+      target = "/tmp";
+    };
   };
+};
+#+end_src
+
+*** Nextcloud
+Configure the ~nextcloud~ service itself.
+#+begin_src nix
+services.nextcloud = {
+  enable = true;
+  hostName = "sisyphus";
+  config = {
+    dbtype = "pgsql";
+    dbuser = "nextcloud";
+    dbhost = "/run/postgresql";
+    dbname = "nextcloud";
+    adminpassFile = "${pkgs.writeText "adminpass" (builtins.readFile ../.secrets/nextcloud.txt)}";
+    adminuser = "root";
+    extraTrustedDomains = ["hephaestus"];
+  };
+  home = "/mnt/HDD/nextcloud";
+};
+#+end_src
+
+Configure the ~postgresql~ database that is used for ~nextcloud~.
+#+begin_src nix
+services.postgresql = {
+  enable = true;
+  ensureDatabases = [ "nextcloud" ];
+  ensureUsers = [
+    { name = "nextcloud";
+      ensurePermissions."DATABASE nextcloud" = "ALL PRIVILEGES";
+    }
+  ];
+};
+#+end_src
+
+Ensure that ~postgres~ is running before ~nextcloud~ starts its setup.
+#+begin_src nix
+systemd.services."nextcloud-setup" = {
+  requires = ["postgresql.service"];
+  after = ["postgresql.service"];
 };
 #+end_src
 
