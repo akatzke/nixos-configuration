@@ -11,9 +11,13 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-index-database = {
+      url = "github:Mic92/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, agenix }: {
+  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database }: {
     nixosConfigurations = {
       hephaestus = let system = "x86_64-linux";
       in nixpkgs.lib.nixosSystem {
@@ -27,6 +31,7 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               users.yusu = import ./home-manager/hephaestus.nix;
+              sharedModules = [ nix-index-database.nixosModules.nix-index ];
             };
           }
           agenix.nixosModules.default
