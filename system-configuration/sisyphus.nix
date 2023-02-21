@@ -319,8 +319,11 @@ in {
     settings = {
       upstream = {
         default = [
-          "1.1.1.1"
-          "1.0.0.1"
+          "dot.ffmuc.net"
+          "dns.digitale-gesellschaft.ch"
+          "unfiltered.adguard-dns.com"
+          "doh.mullvad.net"
+          "dns.njal.la"
         ];
       };
       upstreamTimeout = "2s";
