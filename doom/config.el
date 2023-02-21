@@ -437,10 +437,12 @@ to manually add one myself."
    )
   )
 
-(setq! org-roam-directory (file-truename "~/org-roam"))
-(setq! org-roam-database-connector 'sqlite3)
+(setq! org-roam-directory (file-truename "~/org-roam")
+       org-roam-database-connector 'sqlite3)
 
 (org-roam-db-autosync-mode)
+
+(setq! +org-roam-auto-backlinks-buffer t)
 
 (setq! org-roam-capture-templates
        '(
@@ -636,8 +638,8 @@ are exported to a filename derived from the headline text."
   :config
   (setq!
    org-icalendar-timezone "Europe/Berlin"
-   org-caldav-url "http://192.168.178.74:18080/remote.php/dav/calendars/joopitz"
-   org-caldav-calendar-id "jonas-tasks"
+   org-caldav-url "http://sisyphus/remote.php/dav/calendars/root"
+   org-caldav-calendar-id "personal"
    org-caldav-inbox '(file+headline "~/gtd/tickler.org" "Appointments")
    ;; also include archived entries
    org-caldav-files '("~/gtd/tickler.org" "~/gtd/tickler.org_archive")
@@ -714,15 +716,6 @@ are exported to a filename derived from the headline text."
   :desc "Calc in whole buffer" "C" #'full-calc
   ))
 
-(set-email-account!
- "gmail.com"
- '((mu4e-sent-folder       . "/Gmail/[Google Mail]/Sent Mail")
-   (mu4e-drafts-folder     . "/Gmail/[Google Mail]/Drafts")
-   (mu4e-trash-folder      . "/Gmail/[Google Mail]/Trash")
-   (mu4e-refile-folder     . "/Gmail/[Google Mail]/All Mail")
-   )
- nil
- )
 (set-email-account!
  "outlook"
  '((mu4e-sent-folder       . "/Outlook/Sent")
