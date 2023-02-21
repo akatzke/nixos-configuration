@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, age, ... }:
 
 let
   user = "yusu";
@@ -82,6 +82,28 @@ in {
     overrideFolders = true;     # overrides any folders added or deleted through the WebUI
     openDefaultPorts = true;    # open the default ports in the firewall
   };
+  services.syncthing.devices =
+    {
+      "hephaestus" = {
+        id = "3ES4PVE-5VIXFJK-LRUWO6V-R5DXQ2Z-7VDELSG-7UTJH3J-P7FBO5F-7UCB6QY";
+      };
+      "orpheus" = {
+        id = "6T46LZ2-G5V6YYP-2G5E2ZJ-BRPO64H-RXXCIGW-LZ3LYGT-5JME3V3-MZDRNA2";
+      };
+      "sisyphus" = {
+        id = "CAR66DF-5W4XF3B-SJ4RGU2-ACLQYWF-L733V3A-FSWG2TB-FYA7YWK-OFEBIQS";
+      };
+      "jonas phone" = {
+        id = "2PTXUAT-RQ2QVB3-NLFJMWP-LK6G4OU-GLDZGOI-RRBQOF5-D5RB37U-3GDCWAP";
+      };
+      "anna-lena phone" = {
+        id = "2O33IW4-NXO3FAV-JJSKNUX-65YLX3S-QOJI3PZ-WX2OE73-2725IHT-WDV73AY";
+      };
+      "athena" = {
+        id = "FQINAD3-2T3IRLC-3PI4PVT-ITEZEYV-KEMLA7T-YAHBDKK-YQR7ZVL-FKK4AQU";
+      };
+    }
+  ;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.${user} = {
     isNormalUser = true;
@@ -186,14 +208,109 @@ in {
     fsType = "nfs";
     options = [ "defaults" "x-systemd.automount" "noauto" "timeo=900" "retrans=5" "_netdev" ];
   };
-  services.syncthing = {
-    devices = import ../.secrets/syncthing/devices.nix;
-    folders = import ../.secrets/syncthing/folders_desktop.nix;
-  };
+  services.syncthing.folders =
+    let
+      root = "/home/yusu";
+      home = "/home/yusu";
+    in  {
+      "Jonas/Books" = {
+        path = "${home}/Books";
+        devices = [ "hephaestus" "orpheus" "sisyphus" ];
+        id = "Books";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/Books";
+        };
+      };
+      "Jonas/Documents" = {
+        path = "${home}/Documents";
+        devices = [ "hephaestus" "orpheus" "jonas phone" "sisyphus" ];
+        id = "Documents";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/Documents";
+        };
+      };
+      "Jonas/Uni" = {
+        path = "${home}/Uni";
+        devices = [ "hephaestus" "orpheus" "sisyphus" ];
+        id = "Uni";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/Uni";
+        };
+      };
+      "Jonas/Wallpaper" = {
+        path = "${home}/Pictures/Wallpaper";
+        devices = [ "hephaestus" "orpheus" "sisyphus" ];
+        id = "gzwzv-kkn3v";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/Wallpaper";
+        };
+      };
+      "Jonas/work" = {
+        path = "${home}/work";
+        devices = [ "hephaestus" "orpheus" "sisyphus" ];
+        id = "ss29z-neacc";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/work";
+        };
+      };
+      "Jonas/gtd" = {
+        path = "${home}/gtd";
+        devices = [ "hephaestus" "orpheus" "jonas phone" "sisyphus" ];
+        id = "gtd";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/gtd";
+        };
+      };
+      "Jonas/org-roam" = {
+        path = "${home}/org-roam";
+        devices = [ "hephaestus" "orpheus" "jonas phone" "sisyphus" ];
+        id = "org-roam";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/org-roam";
+        };
+      };
+      "Jonas/org" = { # Name of folder in Syncthing, also the folder ID
+        path = "${home}/org"; # Which folder to add to Syncthing
+        devices =
+          [ "hephaestus" "orpheus" "sisyphus" ]; # Which devices to share the folder with
+        id = "org"; # The unique identifier of the folder, which is
+                    #  identical across all devices
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/Jonas/org";
+        };
+      
+      };
+      "ledger" = {
+        path = "${root}/ledger";
+        devices = [ "hephaestus" "orpheus" "athena" "sisyphus" ];
+        id = "Ledger";
+        versioning = {
+          type = "staggered";
+          params.versionsPath = "${root}/.syncthing_backup/ledger";
+        };
+      };
+    }
+  ;
   services.openssh = {
     passwordAuthentication = false;
     kbdInteractiveAuthentication = false;
     openFirewall = false;
+  };
+  age.secrets.gmail = {
+    file = ../secrets/gmail.age;
+    owner = "${user}";
+  };
+  age.secrets.outlook = {
+    file = ../secrets/outlook.age;
+    owner = "${user}";
   };
   # Enable CUPS to print documents.
   services.printing = {

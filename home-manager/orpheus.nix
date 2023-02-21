@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ osConfig, config, pkgs, ... }:
 let
   user = "yusu";
   maildir = "/home/yusu/.mail";
@@ -114,7 +114,7 @@ in {
     ];
   };
   home.file.".authinfo.gpg" = {
-    source = ../.secrets/.authinfo.gpg;
+    source = ../secrets/.authinfo.gpg;
   };
   xdg.mimeApps = {
     enable = true;
@@ -390,10 +390,6 @@ in {
       };
     };
   };
-  programs.rbw = {
-    enable = true;
-    settings = import ../.secrets/bitwarden_settings.nix;
-  };
   programs.emacs = {
     enable = true;
     package = pkgs.emacs;
@@ -407,7 +403,36 @@ in {
   };
   accounts.email = {
     maildirBasePath = "${maildir}";
-    accounts = import ../.secrets/email_accounts.nix;
+    accounts = {
+      Outlook = {
+        address = "jonas.opitz@live.de";
+        userName = "jonas.opitz@live.de";
+        realName = "Jonas Opitz";
+        primary = true;
+        flavor = "plain";
+        passwordCommand = "cat ${osConfig.age.secrets.outlook.path}";
+  
+        msmtp.enable = true;
+        mbsync = {
+          enable = true;
+          create = "both";
+          expunge = "both";
+        };
+        mu.enable = true;
+        thunderbird.enable = true;
+  
+        imap = {
+          host = "outlook.office365.com";
+          port = 993;
+          tls.enable = true;
+        };
+        smtp = {
+          host = "smtp-mail.outlook.com";
+          port = 587;
+          tls.useStartTls = true;
+        };
+      };
+    };
   };
   
   programs = {

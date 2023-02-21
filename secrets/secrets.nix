@@ -1,0 +1,14 @@
+let
+  yusu_hephaestus =
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5HQ3JCKdawwfs+SYa6W1SjnQyRCQZaB2dHfcau0/BrsRd9yDc27OqmEJqjM8361E3wTwLQ+v1bMusjJrAIzV6rcZRy7MLfB6qkeiVi/1DTLI8ugNBR0wIdH1Xj/Tm2U528D2EzdCxFSmzU/5kxYIFZEvmDg3N4ON9CPGHO15L7gMUTN1oyO+Ds5PxqkRrs1Ivtankiz1UXCy1KrzdPtP+YU8svNi+/e2SmC3byAZEpWb0RCX9VrLUTWyDTIcjlBfM213w5Qqh6rtMKpSjc2gLs8FaQ5CyquniTx26pp5pvD7VxlNN+Km2U6hO643qbQsb47lTkLK/D48MiyGUOlT9";
+
+  hephaestus =
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDMR2GNtcU0W8AI1oxJA/yapJdwQoISF/2FRND7tRodUO4m28x4bF6gEfGk8kTPnYyAaHt0/6aoQXsDG8/327SXH4xU0OnKX6NifdOaOOlt+hpEopqhk+EOHjtpqxmbC351JuMHeBhs1ibonUHungj/jW7lZGQ7s+NyXftEA0bjWFlz4rZqO3RL2YvP0NkFrDQZXlwm6gkW1LwsD7PAq52nvv0oCNDikHPIcyEkCEbpY24AjziuRGu243Zt8GP/JYtqS3u+bXZ5KxZXcXwIGsQCjhsf+ctP522WEqxRldZvfYtw6lTEWbmgD/tTOB1kdSz1XC0R5CJ+EOE2EKZlwPBk3x+ySJGZ8RqMjeBu+TslPNn6G2JZeRIpedjRWC/SeSKbpYTkWUgKswbktBbb78QLPdIXuoLuqfGijg6wRsww5dPHCsIk8EOtbQ4fIj3MNyRf25e3B3b7rxGuGmZ3XO8r0KV3lBonQBCpspCLhhBAL5tk238LWygACAdy38B4vlDnTPXb+Mfe5qFaZnzfluIxqyea8l4ruIa7fE0BU5Tlylruj6H/lTw7BRFy1jebGmUhVQuamdvHrG7jP3dFtDxd5Oltb2XT+Jd4Uj19H3w3GHUKW3LqIXmnpJK9U7CgsyIoHaaXlPLZovyueX+D4sBVF/YMwL0H0SQ1a82pm84Z3Q==";
+
+  desktop_users = [ yusu_hephaestus ];
+  desktops = [ hephaestus ];
+in {
+  "gmail.age".publicKeys = desktop_users ++ desktops;
+  "outlook.age".publicKeys = desktop_users ++ desktops;
+  "nextcloud.age".publicKeys = desktop_users ++ desktops;
+}

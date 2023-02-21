@@ -7,12 +7,17 @@
       url = "github:nix-community/home-manager/release-22.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager }: {
+  outputs = { self, nixpkgs, home-manager, agenix }: {
     nixosConfigurations = {
-      hephaestus = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+      hephaestus = let system = "x86_64-linux";
+      in nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
           ./hardware-configuration/hephaestus.nix
           ./system-configuration/hephaestus.nix
@@ -24,10 +29,16 @@
               users.yusu = import ./home-manager/hephaestus.nix;
             };
           }
+          agenix.nixosModules.default
+          {
+            environment.systemPackages =
+              [ agenix.packages."${system}".default ];
+          }
         ];
       };
-      orpheus = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+      orpheus = let system = "x86_64-linux";
+      in nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
           ./hardware-configuration/orpheus.nix
           ./system-configuration/orpheus.nix
@@ -39,10 +50,16 @@
               users.yusu = import ./home-manager/orpheus.nix;
             };
           }
+          agenix.nixosModules.default
+          {
+            environment.systemPackages =
+              [ agenix.packages."${system}".default ];
+          }
         ];
       };
-      sisyphus = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
+      sisyphus = let system = "aarch64-linux";
+      in nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
           ./hardware-configuration/sisyphus.nix
           ./system-configuration/sisyphus.nix
@@ -53,6 +70,11 @@
               useUserPackages = true;
               users.yusu = import ./home-manager/sisyphus.nix;
             };
+          }
+          agenix.nixosModules.default
+          {
+            environment.systemPackages =
+              [ agenix.packages."${system}".default ];
           }
         ];
       };

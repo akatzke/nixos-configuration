@@ -38,6 +38,7 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
   - [[#udev-rules][Udev Rules]]
   - [[#user-accounts][User Accounts]]
   - [[#ssh][SSH]]
+  - [[#secrets][Secrets]]
   - [[#server][Server]]
   - [[#other-services--applications][Other Services & Applications]]
 - [[#home-manager][Home Manager]]
@@ -79,12 +80,17 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       url = "github:nix-community/home-manager/release-22.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager }: {
+  outputs = { self, nixpkgs, home-manager, agenix }: {
     nixosConfigurations = {
-      hephaestus = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+      hephaestus = let system = "x86_64-linux";
+      in nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
           ./hardware-configuration/hephaestus.nix
           ./system-configuration/hephaestus.nix
@@ -96,10 +102,16 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
               users.yusu = import ./home-manager/hephaestus.nix;
             };
           }
+          agenix.nixosModules.default
+          {
+            environment.systemPackages =
+              [ agenix.packages."${system}".default ];
+          }
         ];
       };
-      orpheus = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+      orpheus = let system = "x86_64-linux";
+      in nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
           ./hardware-configuration/orpheus.nix
           ./system-configuration/orpheus.nix
@@ -111,10 +123,16 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
               users.yusu = import ./home-manager/orpheus.nix;
             };
           }
+          agenix.nixosModules.default
+          {
+            environment.systemPackages =
+              [ agenix.packages."${system}".default ];
+          }
         ];
       };
-      sisyphus = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
+      sisyphus = let system = "aarch64-linux";
+      in nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
           ./hardware-configuration/sisyphus.nix
           ./system-configuration/sisyphus.nix
@@ -125,6 +143,11 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
               useUserPackages = true;
               users.yusu = import ./home-manager/sisyphus.nix;
             };
+          }
+          agenix.nixosModules.default
+          {
+            environment.systemPackages =
+              [ agenix.packages."${system}".default ];
           }
         ];
       };
@@ -145,7 +168,7 @@ done in the functional ~nix~ language.
 
 Set up the =noweb-ref= tags that shall be included inside of each system configuration:
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/hephaestus.nix
-{ config, pkgs, ... }:
+{ config, pkgs, age, ... }:
 
 let
   user = "yusu";
@@ -158,7 +181,7 @@ in {
 #+end_src
 
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/orpheus.nix
-{ config, pkgs, ... }:
+{ config, pkgs, age, ... }:
 
 let
   user = "yusu";
@@ -171,7 +194,7 @@ in {
 #+end_src
 
 #+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/sisyphus.nix
-{ config, pkgs, ... }:
+{ config, pkgs, age, ... }:
 
 let
   user = "yusu";
@@ -686,19 +709,232 @@ services.syncthing = {
 };
 #+end_src
 
-See [[id:e5d5ae0f-88d6-4c47-ab4b-4cfb80ad04c2][secret configuration]] for configuration of the devices and folders.
-#+begin_src nix :noweb-ref desktop
-services.syncthing = {
-  devices = import ../.secrets/syncthing/devices.nix;
-  folders = import ../.secrets/syncthing/folders_desktop.nix;
-};
+#+begin_src nix :noweb yes
+services.syncthing.devices =
+  <<devices>>
+;
+#+end_src
+#+begin_src nix :noweb yes :noweb-ref desktop
+services.syncthing.folders =
+  <<folders/desktop>>
+;
 #+end_src
 #+begin_src nix :noweb-ref sisyphus
-services.syncthing = {
-  devices = import ../.secrets/syncthing/devices.nix;
-  folders = import ../.secrets/syncthing/folders_sisyphus.nix;
+services.syncthing.folders =
+  <<folders/sisyphus>>
+;
+#+end_src
+
+*** Devices
+#+begin_src nix :noweb-ref devices
+{
+  "hephaestus" = {
+    id = "3ES4PVE-5VIXFJK-LRUWO6V-R5DXQ2Z-7VDELSG-7UTJH3J-P7FBO5F-7UCB6QY";
+  };
+  "orpheus" = {
+    id = "6T46LZ2-G5V6YYP-2G5E2ZJ-BRPO64H-RXXCIGW-LZ3LYGT-5JME3V3-MZDRNA2";
+  };
+  "sisyphus" = {
+    id = "CAR66DF-5W4XF3B-SJ4RGU2-ACLQYWF-L733V3A-FSWG2TB-FYA7YWK-OFEBIQS";
+  };
+  "jonas phone" = {
+    id = "2PTXUAT-RQ2QVB3-NLFJMWP-LK6G4OU-GLDZGOI-RRBQOF5-D5RB37U-3GDCWAP";
+  };
+  "anna-lena phone" = {
+    id = "2O33IW4-NXO3FAV-JJSKNUX-65YLX3S-QOJI3PZ-WX2OE73-2725IHT-WDV73AY";
+  };
+  "athena" = {
+    id = "FQINAD3-2T3IRLC-3PI4PVT-ITEZEYV-KEMLA7T-YAHBDKK-YQR7ZVL-FKK4AQU";
+  };
+}
+#+end_src
+
+*** Folder Specifications
+#+begin_src nix :noweb-ref Jonas/org
+"Jonas/org" = { # Name of folder in Syncthing, also the folder ID
+  path = "${home}/org"; # Which folder to add to Syncthing
+  devices =
+    [ "hephaestus" "orpheus" "sisyphus" ]; # Which devices to share the folder with
+  id = "org"; # The unique identifier of the folder, which is
+              #  identical across all devices
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/org";
+  };
+
 };
 #+end_src
+
+#+begin_src nix :noweb-ref Jonas/org-roam
+"Jonas/org-roam" = {
+  path = "${home}/org-roam";
+  devices = [ "hephaestus" "orpheus" "jonas phone" "sisyphus" ];
+  id = "org-roam";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/org-roam";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref ledger
+"ledger" = {
+  path = "${root}/ledger";
+  devices = [ "hephaestus" "orpheus" "athena" "sisyphus" ];
+  id = "Ledger";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/ledger";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/Documents
+"Jonas/Documents" = {
+  path = "${home}/Documents";
+  devices = [ "hephaestus" "orpheus" "jonas phone" "sisyphus" ];
+  id = "Documents";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/Documents";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/Books
+"Jonas/Books" = {
+  path = "${home}/Books";
+  devices = [ "hephaestus" "orpheus" "sisyphus" ];
+  id = "Books";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/Books";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/Uni
+"Jonas/Uni" = {
+  path = "${home}/Uni";
+  devices = [ "hephaestus" "orpheus" "sisyphus" ];
+  id = "Uni";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/Uni";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/gtd
+"Jonas/gtd" = {
+  path = "${home}/gtd";
+  devices = [ "hephaestus" "orpheus" "jonas phone" "sisyphus" ];
+  id = "gtd";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/gtd";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/Wallpaper
+"Jonas/Wallpaper" = {
+  path = "${home}/Pictures/Wallpaper";
+  devices = [ "hephaestus" "orpheus" "sisyphus" ];
+  id = "gzwzv-kkn3v";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/Wallpaper";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/work
+"Jonas/work" = {
+  path = "${home}/work";
+  devices = [ "hephaestus" "orpheus" "sisyphus" ];
+  id = "ss29z-neacc";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/work";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/Backup-Fairphone
+"Jonas/Backup Fairphone" = {
+  path = "${home}/Backup Fairphone";
+  devices = [ "jonas phone" "sisyphus" ];
+  id = "4nk8n-jejos";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/Backup Fairphone";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Jonas/Aegis
+"Jonas/Aegis" = {
+  path = "${home}/Aegis";
+  devices = [ "jonas phone" "sisyphus" ];
+  id = "lzruc-rgtex";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Jonas/Aegis";
+  };
+};
+#+end_src
+
+#+begin_src nix :noweb-ref Photos
+"Photos" = {
+  path = "${root}/Photos";
+  devices = [ "jonas phone" "anna-lena phone" "sisyphus" ];
+  id = "j7xt7-vtt1h";
+  versioning = {
+    type = "staggered";
+    params.versionsPath = "${root}/.syncthing_backup/Photos";
+  };
+};
+#+end_src
+
+*** Folder Weaving
+#+begin_src nix :noweb yes :noweb-ref folders/desktop
+let
+  root = "/home/yusu";
+  home = "/home/yusu";
+in  {
+  <<Jonas/Books>>
+  <<Jonas/Documents>>
+  <<Jonas/Uni>>
+  <<Jonas/Wallpaper>>
+  <<Jonas/work>>
+  <<Jonas/gtd>>
+  <<Jonas/org-roam>>
+  <<Jonas/org>>
+  <<ledger>>
+}
+#+end_src
+
+#+begin_src nix :noweb yes :noweb-ref folders/sisyphus
+let
+  root = "/mnt/HDD/Syncthing";
+  home = "${root}/Jonas";
+in {
+  <<Jonas/Aegis>>
+  <<Jonas/Backup-Fairphone>>
+  <<Jonas/Books>>
+  <<Jonas/Documents>>
+  <<Jonas/Uni>>
+  <<Jonas/Wallpaper>>
+  <<Jonas/work>>
+  <<Jonas/gtd>>
+  <<Jonas/org-roam>>
+  <<Jonas/org>>
+  <<Photos>>
+  <<ledger>>
+}
+#+end_src
+
 
 ** Udev Rules
 Activate the udev rules necessary for flashing QMK firmware onto my keyboard.
@@ -745,6 +981,25 @@ services.openssh = {
   passwordAuthentication = false;
   kbdInteractiveAuthentication = false;
   openFirewall = false;
+};
+#+end_src
+** Secrets
+#+begin_src nix :noweb-ref desktop
+age.secrets.gmail = {
+  file = ../secrets/gmail.age;
+  owner = "${user}";
+};
+age.secrets.outlook = {
+  file = ../secrets/outlook.age;
+  owner = "${user}";
+};
+#+end_src
+
+#+begin_src nix :noweb-ref sisyphus
+age.secrets.nextcloud = {
+  file = ../secrets/outlook.age;
+  owner = "nextcloud";
+  group = "nextcloud";
 };
 #+end_src
 
@@ -837,7 +1092,7 @@ services.nextcloud = {
     dbuser = "nextcloud";
     dbhost = "/run/postgresql";
     dbname = "nextcloud";
-    adminpassFile = "${pkgs.writeText "adminpass" (builtins.readFile ../.secrets/nextcloud.txt)}";
+    adminpassFile = osConfig.secrets.nextcloud.path;
     adminuser = "root";
     extraTrustedDomains = ["hephaestus"];
   };
@@ -960,7 +1215,7 @@ This mostly includes local packages and dotfiles.
 
 Open the Home Manager context, setting variables for the username, the full name, and the mail directory:
 #+begin_src nix :noweb yes :tangle home-manager/hephaestus.nix :noweb-ref no
-{ config, pkgs, ... }:
+{ osConfig, config, pkgs, ... }:
 let
   user = "yusu";
   maildir = "/home/yusu/.mail";
@@ -973,7 +1228,7 @@ in {
 #+end_src
 
 #+begin_src nix :noweb yes :tangle home-manager/orpheus.nix :noweb-ref no
-{ config, pkgs, ... }:
+{ osConfig, config, pkgs, ... }:
 let
   user = "yusu";
   maildir = "/home/yusu/.mail";
@@ -986,7 +1241,7 @@ in {
 #+end_src
 
 #+begin_src nix :noweb yes :tangle home-manager/sisyphus.nix :noweb-ref no
-{ config, pkgs, ... }:
+{ osConfig, config, pkgs, ... }:
 let
   user = "yusu";
   name = "Jonas Opitz";
@@ -1040,7 +1295,7 @@ xdg.configFile."scripts" = {
 Link the secret (and encrypted) [[file:.secrets/.authinfo.gpg][.authinfo.gpg]] file, which stores logins that [[id:6288c98c-cef6-42a1-ac0c-96952ad5a385][Doom-Emacs]] shall remember.
 #+begin_src nix :noweb-ref hm/desktop
 home.file.".authinfo.gpg" = {
-  source = ../.secrets/.authinfo.gpg;
+  source = ../secrets/.authinfo.gpg;
 };
 #+end_src
 
@@ -1363,15 +1618,6 @@ fingerprint = {
 };
 #+end_src
 
-*** Bitwarden
-See [[id:37e5a77a-4c07-43d8-a5af-ef3a6ebde2ad][secret configuration]] for the specification of the settings.
-#+begin_src nix :noweb-ref hm/desktop
-programs.rbw = {
-  enable = true;
-  settings = import ../.secrets/bitwarden_settings.nix;
-};
-#+end_src
-
 *** Direnv
 [[id:97596a76-f045-4d55-9acb-7c70d4407d0d][direnv]] and [[id:fa95e5b0-a67a-4c95-a2f2-1b68c4c4aa2d][nix-direnv]] enable automatic loading of working environments when entering project folders.
 #+begin_src nix
@@ -1438,7 +1684,36 @@ See [[id:87c13fe4-6026-436e-809e-236e74ff0ec4][secret configuration]] for the sp
 #+begin_src nix :noweb-ref hm/desktop
 accounts.email = {
   maildirBasePath = "${maildir}";
-  accounts = import ../.secrets/email_accounts.nix;
+  accounts = {
+    Outlook = {
+      address = "jonas.opitz@live.de";
+      userName = "jonas.opitz@live.de";
+      realName = "Jonas Opitz";
+      primary = true;
+      flavor = "plain";
+      passwordCommand = "cat ${osConfig.age.secrets.outlook.path}";
+
+      msmtp.enable = true;
+      mbsync = {
+        enable = true;
+        create = "both";
+        expunge = "both";
+      };
+      mu.enable = true;
+      thunderbird.enable = true;
+
+      imap = {
+        host = "outlook.office365.com";
+        port = 993;
+        tls.enable = true;
+      };
+      smtp = {
+        host = "smtp-mail.outlook.com";
+        port = 587;
+        tls.useStartTls = true;
+      };
+    };
+  };
 };
 
 programs = {

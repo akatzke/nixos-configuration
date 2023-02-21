@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ osConfig, config, pkgs, ... }:
 let
   user = "yusu";
   name = "Jonas Opitz";
