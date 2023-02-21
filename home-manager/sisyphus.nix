@@ -119,6 +119,7 @@ in {
     # The following variable can be used to configure cursor shape in
     # visual mode, but due to fish_cursor_default, is redundant here
     set fish_cursor_visual block blink
+    set EDITOR vim
   '';
   services.gpg-agent.pinentryFlavor = "curses";
   home.packages = [

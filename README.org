@@ -1759,6 +1759,7 @@ programs.fish.interactiveShellInit = ''
 #+begin_src nix :noweb yes :noweb-ref hm/sisyphus
 programs.fish.interactiveShellInit = ''
   <<fish_init>>
+  set EDITOR vim
 '';
 #+end_src
 
