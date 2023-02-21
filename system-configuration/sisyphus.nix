@@ -267,7 +267,7 @@ in {
       dbname = "nextcloud";
       adminpassFile = osConfig.secrets.nextcloud.path;
       adminuser = "root";
-      extraTrustedDomains = ["hephaestus"];
+      extraTrustedDomains = ["hephaestus" "192.168.178.*"];
     };
     home = "/mnt/HDD/nextcloud";
   };
