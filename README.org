@@ -1920,6 +1920,14 @@ services.gpg-agent.pinentryFlavor = "qt";
 #+begin_src nix :noweb-ref hm/sisyphus
 services.gpg-agent.pinentryFlavor = "curses";
 #+end_src
+*** Git
+#+begin_src nix
+programs.git = {
+  enable = true;
+  userName = "joopitz";
+  userEmail = "jonas.opitz@live.de";
+};
+#+end_src
 
 *** Kde Connect
 [[https://kdeconnect.kde.org/][KDE Connect]] is an application that allows for interactions between devices, e.g. phones and pcs.
@@ -1951,7 +1959,13 @@ Enable the Num Lock by default.
 #+begin_src nix
 xsession.numlock.enable = true;
 #+end_src
-
+*** Nix-Index
+#+begin_src nix
+programs.nix-index = {
+  enable = true;
+  enableFishIntegration = true;
+};
+#+end_src
 *** OBS
 [[https://obsproject.com/][OBS]] is THE (open source) video recording and live streaming software.
 It can also be used as a [[id:dc74d473-b14a-4fe4-886b-70f2ef47de8a][virtual webcam]], e.g. to crop the output of a camera or apply filters.

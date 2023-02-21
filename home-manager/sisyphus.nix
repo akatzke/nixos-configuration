@@ -100,7 +100,16 @@ in {
   services.gpg-agent = {
     enable = true;
   };
+  programs.git = {
+    enable = true;
+    userName = "joopitz";
+    userEmail = "jonas.opitz@live.de";
+  };
   xsession.numlock.enable = true;
+  programs.nix-index = {
+    enable = true;
+    enableFishIntegration = true;
+  };
   programs.zoxide = {
     enable = true;
     enableFishIntegration = true;
