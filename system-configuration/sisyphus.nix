@@ -304,7 +304,7 @@ in {
   ;
   services.getty.autologinUser = "${user}";
   age.secrets.nextcloud = {
-    file = ../secrets/outlook.age;
+    file = ../secrets/nextcloud.age;
     owner = "nextcloud";
     group = "nextcloud";
   };
@@ -380,7 +380,7 @@ in {
       dbuser = "nextcloud";
       dbhost = "/run/postgresql";
       dbname = "nextcloud";
-      adminpassFile = osConfig.secrets.nextcloud.path;
+      adminpassFile = config.age.secrets.nextcloud.path;
       adminuser = "root";
       extraTrustedDomains = ["hephaestus" "192.168.178.*"];
     };
