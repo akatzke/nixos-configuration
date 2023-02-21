@@ -158,6 +158,8 @@ in {
       # nextcloud
       80
       443
+      # NFS
+      2049
     ];
   
     allowedUDPPorts = [
@@ -177,6 +179,10 @@ in {
     device = "/dev/sda1";
     fsType = "auto";
     options = [ "defaults" "x-systemd.automount" "noauto" ];
+  };
+  fileSystems."/srv/nfs/Media" = {
+    device = "/mnt/HDD/Media";
+    options = [ "bind" ];
   };
   swapDevices = [
     {
@@ -401,6 +407,12 @@ in {
   systemd.services."nextcloud-setup" = {
     requires = ["postgresql.service"];
     after = ["postgresql.service"];
+  };
+  services.nfs.server = {
+    enable = true;
+    exports = ''
+      /srv/nfs/Media      192.168.178.0/24(insecure,rw,sync,no_subtree_check,no_all_squash,root_squash)
+    '';
   };
   virtualisation.docker.enable = true;
 }

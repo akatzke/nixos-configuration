@@ -376,6 +376,8 @@ networking.firewall = {
     # nextcloud
     80
     443
+    # NFS
+    2049
   ];
 
   allowedUDPPorts = [
@@ -635,6 +637,15 @@ fileSystems."/mnt/HDD" = {
   device = "/dev/sda1";
   fsType = "auto";
   options = [ "defaults" "x-systemd.automount" "noauto" ];
+};
+#+end_src
+
+Bind the =Media= folder onto =/srv/nfs/Media= for ~NFS~ file sharing.
+See [[NFS]]
+#+begin_src nix
+fileSystems."/srv/nfs/Media" = {
+  device = "/mnt/HDD/Media";
+  options = [ "bind" ];
 };
 #+end_src
 
@@ -1099,6 +1110,15 @@ Ensure that ~postgres~ is running before ~nextcloud~ starts its setup.
 systemd.services."nextcloud-setup" = {
   requires = ["postgresql.service"];
   after = ["postgresql.service"];
+};
+#+end_src
+*** NFS
+#+begin_src nix
+services.nfs.server = {
+  enable = true;
+  exports = ''
+    /srv/nfs/Media      192.168.178.0/24(insecure,rw,sync,no_subtree_check,no_all_squash,root_squash)
+  '';
 };
 #+end_src
 
