@@ -19,70 +19,75 @@
 
   outputs = { self, nixpkgs, home-manager, agenix, nix-index-database }: {
     nixosConfigurations = {
-      hephaestus = let system = "x86_64-linux";
-      in nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./hardware-configuration/hephaestus.nix
-          ./system-configuration/hephaestus.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.yusu = import ./home-manager/hephaestus.nix;
-              sharedModules = [ nix-index-database.nixosModules.nix-index ];
-            };
-          }
-          agenix.nixosModules.default
-          {
-            environment.systemPackages =
-              [ agenix.packages."${system}".default ];
-          }
-        ];
-      };
-      orpheus = let system = "x86_64-linux";
-      in nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./hardware-configuration/orpheus.nix
-          ./system-configuration/orpheus.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.yusu = import ./home-manager/orpheus.nix;
-            };
-          }
-          agenix.nixosModules.default
-          {
-            environment.systemPackages =
-              [ agenix.packages."${system}".default ];
-          }
-        ];
-      };
-      sisyphus = let system = "aarch64-linux";
-      in nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./hardware-configuration/sisyphus.nix
-          ./system-configuration/sisyphus.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.yusu = import ./home-manager/sisyphus.nix;
-            };
-          }
-          agenix.nixosModules.default
-          {
-            environment.systemPackages =
-              [ agenix.packages."${system}".default ];
-          }
-        ];
-      };
+      hephaestus = let
+        system = "x86_64-linux";
+        hostname = "hephaestus";
+      in nixpkgs.lib.nixosSystem
+        {
+          inherit system;
+          modules = [
+            ./hardware-configuration/${hostname}.nix
+            ./system-configuration/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = import ./home-manager/${hostname}.nix;
+                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+              };
+            }
+            agenix.nixosModules.default
+            { environment.systemPackages = [ agenix.packages."${system}".default ]; }
+          ];
+        }
+      ;
+      orpheus = let
+        system = "x86_64-linux";
+        hostname = "orpheus";
+      in nixpkgs.lib.nixosSystem
+        {
+          inherit system;
+          modules = [
+            ./hardware-configuration/${hostname}.nix
+            ./system-configuration/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = import ./home-manager/${hostname}.nix;
+                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+              };
+            }
+            agenix.nixosModules.default
+            { environment.systemPackages = [ agenix.packages."${system}".default ]; }
+          ];
+        }
+      ;
+      sisyphus = let
+        system = "aarch64-linux";
+        hostname = "sisyphus";
+      in nixpkgs.lib.nixosSystem
+        {
+          inherit system;
+          modules = [
+            ./hardware-configuration/${hostname}.nix
+            ./system-configuration/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = import ./home-manager/${hostname}.nix;
+                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+              };
+            }
+            agenix.nixosModules.default
+            { environment.systemPackages = [ agenix.packages."${system}".default ]; }
+          ];
+        }
+      ;
     };
   };
 }
