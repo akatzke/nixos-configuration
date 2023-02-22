@@ -219,6 +219,14 @@
          ("account" "%(binary) -f %(ledger-file) reg %(account)"))
        )
 
+(use-package nix-mode
+  :defer t
+  :config
+  (map! :map nix-mode-map
+        :i "=" (kbd "C-q = C-q ; C-b")
+        )
+  )
+
 (setq! org-cite-global-bibliography
        '(
          "~/Books/Academics/library.bib"

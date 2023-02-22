@@ -715,6 +715,19 @@ This sets the set of reports that can be run.
        )
 #+END_SRC
 
+*** Nix
+
+Automatically insert a semicolon when inserting an equals-sign.
+#+begin_src elisp
+(use-package nix-mode
+  :defer t
+  :config
+  (map! :map nix-mode-map
+        :i "=" (kbd "C-q = C-q ; C-b")
+        )
+  )
+#+end_src
+
 ** Bibliography
 
 Set the location of the bibliographies for [[id:053d4a0a-7ef0-47bb-8a47-dd5efeccc798][Org-Cite]]
