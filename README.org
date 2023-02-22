@@ -1793,7 +1793,7 @@ programs.fish.shellAliases = {
   # ledger aliases
   balance="ledger --empty -f ~/ledger/main.ledger bal -X EUR";
   budget="ledger --empty -f ~/ledger/main.ledger bal ^budget -X EUR";
-  ledgerviz="nix run gitlab:joopitz/ledgerviz --";
+  ledgerviz="nix run git+https://codeberg.org/joka/ledgerviz.git --";
   # emacs as a client, whilst swallowing the terminal
   em="devour emacsclient -c";
   # interactively cd utilizing fasd
