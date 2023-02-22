@@ -1324,15 +1324,39 @@ This way, the previous three days and the next two weeks will be shown.
 #+end_src
 
 Sync ~org-agenda~ with ~Nextcloud~ using the ~CalDav~ protocol.
+Uses code from [[https://www.reddit.com/r/orgmode/comments/8rl8ep/comment/e0sb5j0/?utm_source=share&utm_medium=web2x&context=3][this Reddit comment]] for automatic syncs.
 #+begin_src elisp
 (use-package! org-caldav
   :after org
+  :init
+  ;; This is the sync on close function; it also prompts for save after syncing so
+  ;; no late changes get lost
+  (defun org-caldav-sync-at-close ()
+    (org-caldav-sync)
+    (save-some-buffers))
+
+  ;; This is the delayed sync function; it waits until emacs has been idle for
+  ;; "secs" seconds before syncing.  The delay is important because the caldav-sync
+  ;; can take five or ten seconds, which would be painful if it did that right at save.
+  ;; This way it just waits until you've been idle for a while to avoid disturbing
+  ;; the user.
+  (defvar org-caldav-sync-timer nil
+    "Timer that `org-caldav-push-timer' used to reschedule itself, or nil.")
+  (defun org-caldav-sync-with-delay (secs)
+    (when org-caldav-sync-timer
+      (cancel-timer org-caldav-sync-timer))
+    (setq org-caldav-sync-timer
+          (run-with-idle-timer (* 1 secs) nil 'org-caldav-sync)))
+
+  ;; Actual calendar configuration edit this to meet your specific needs
   :config
   (setq!
    org-icalendar-timezone "Europe/Berlin"
    org-caldav-url "http://sisyphus/remote.php/dav/calendars/root"
    org-caldav-calendar-id "personal"
    org-caldav-inbox '(file+headline "~/gtd/tickler.org" "Appointments")
+   ;; hide sync results
+   org-caldav-show-sync-results nil
    ;; also include archived entries
    org-caldav-files '("~/gtd/tickler.org" "~/gtd/tickler.org_archive")
    ;; do not sync TODO entries
@@ -1342,8 +1366,15 @@ Sync ~org-agenda~ with ~Nextcloud~ using the ~CalDav~ protocol.
    org-icalendar-use-deadline '(event-if-not-todo)
    org-icalendar-use-scheduled '(event-if-not-todo)
    ;; set a default reminder for exported entries
-   org-icalendar-alarm-time 30
-   )
+   org-icalendar-alarm-time 30)
+
+  ;; Add the delayed save hook with a five minute idle timer
+  (add-hook 'after-save-hook
+	    (lambda ()
+	      (when (eq major-mode 'org-mode)
+		(org-caldav-sync-with-delay 300))))
+  ;; Add the close emacs hook
+  (add-hook 'kill-emacs-hook 'org-caldav-sync-at-close)
   )
 #+end_src
 
