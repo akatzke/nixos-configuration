@@ -213,7 +213,7 @@ Modules that bring support for a language or group of languages to Emacs.
 ;;elm               ; care for a cup of TEA?
 emacs-lisp        ; drown in parentheses
 ;;erlang            ; an elegant language for a more civilized age
-(ess +lsp)               ; emacs speaks statistics
+(ess +lsp +stan +tree-sitter)               ; emacs speaks statistics
 ;;factor
 ;;faust             ; dsp, but you get to keep your soul
 ;;fortran           ; in FORTRAN, GOD is REAL (unless declared INTEGER)
@@ -685,21 +685,6 @@ Enable [[id:6a93ff40-b473-45cb-a49b-7ace813f5330][peep-dired]] and configure it
 :PROPERTIES:
 :VISIBILITY: folded
 :END:
-
-*** Stan :noexport:
-:PROPERTIES:
-:header-args: :results none :tangle no
-:END:
-Disabled ~stan~ mode
-
-#+begin_src elisp
-(use-package stan-mode
-  :defer t
-  :mode ("\\.stan\\'" . stan-mode)
-  :hook (stan-mode . stan-mode-setup)
-  :config
-  (setq stan-indentation-offset 2))
-#+end_src
 
 *** Ledger
 Configuration for [[id:080be9ce-24ea-4a89-a21f-aeb9a090faa4][Ledger]], a plain-text accounting tool.
@@ -1512,11 +1497,6 @@ Use [[id:41d896e4-12f0-46e0-9f19-96373229f371][org-roam-ui]] and unpin [[id:795e
 [[id:0c4ec7f0-ca67-4e9f-88cd-0b897aa0fbd4][circadian.el]]
 #+begin_src elisp
 (package! circadian)
-#+end_src
-
-[[id:9b837bb7-5bdd-475d-96cf-db5c69439caa][stan]]-mode
-#+begin_src elisp
-(package! stan-mode)
 #+end_src
 
 [[id:9688ea4f-09e7-4b65-9879-da03500d9113][org-auto-tangle]]

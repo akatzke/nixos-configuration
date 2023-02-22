@@ -10,8 +10,6 @@
 
 (package! circadian)
 
-(package! stan-mode)
-
 (package! org-auto-tangle
   :recipe (:host github :repo "yilkalargaw/org-auto-tangle"))
 

@@ -114,7 +114,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
 ;;elm               ; care for a cup of TEA?
 emacs-lisp        ; drown in parentheses
 ;;erlang            ; an elegant language for a more civilized age
-(ess +lsp)               ; emacs speaks statistics
+(ess +lsp +stan +tree-sitter)               ; emacs speaks statistics
 ;;factor
 ;;faust             ; dsp, but you get to keep your soul
 ;;fortran           ; in FORTRAN, GOD is REAL (unless declared INTEGER)
