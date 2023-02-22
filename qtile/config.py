@@ -746,11 +746,9 @@ floating_layout = layout.Floating(
         # default_float_rules include: utility, notification, toolbar, splash, dialog,
         # file_progress, confirm, download and error.
         *layout.Floating.default_float_rules,
+        Match(func=lambda c: bool(c.is_transient_for())), # float all transient windows
         Match(title="Confirmation"),        # tastyworks exit box
-        Match(title="Qalculate!"),          # qalculate-gtk
-        Match(wm_class="kdenlive"),         # kdenlive
         Match(wm_class="pinentry-gtk-2"),   # GPG key password entry
-        Match(title="LibreWolf Private Browsing"),
     ]
 )
 auto_fullscreen = True
