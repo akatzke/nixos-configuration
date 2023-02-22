@@ -6,7 +6,7 @@
   :recipe (:host github
            :repo "awth13/org-appear"))
 
-(unpin! org-roam)
+;; (unpin! org-roam)
 (package! org-roam-ui)
 
 (package! circadian)
@@ -36,5 +36,5 @@
 
 (package! activity-watch-mode)
 
-(package! transient :pin "c2bdf7e12c530eb85476d3aef317eb2941ab9440")
-(package! with-editor :pin "bbc60f68ac190f02da8a100b6fb67cf1c27c53ab")
+;; (package! transient :pin "c2bdf7e12c530eb85476d3aef317eb2941ab9440")
+;; (package! with-editor :pin "bbc60f68ac190f02da8a100b6fb67cf1c27c53ab")
