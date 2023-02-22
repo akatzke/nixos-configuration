@@ -225,15 +225,13 @@ keys.extend(
         Key(
             ["mod4", "shift"],
             vim_down,
-            lazy.layout.shuffle_down(),
-            lazy.layout.section_down(),
+            lazy.layout.swap_left(),
             desc="Move windows down in current stack",
         ),
         Key(
             ["mod4", "shift"],
             vim_up,
-            lazy.layout.shuffle_up(),
-            lazy.layout.section_up(),
+            lazy.layout.swap_right(),
             desc="Move windows up in current stack",
         ),
         Key(
