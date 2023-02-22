@@ -1308,7 +1308,7 @@ xdg.mimeApps = {
   associations = {
     added = {
       "application/pdf"="okularApplication_pdf.desktop";
-      "application/xhtml+xml" = "firefox.desktop";
+      "application/xhtml+xml" = "librewolf.desktop";
       "application/x-compressed-tar"="org.kde.dolphin.desktop";
       "inode/directory" = "org.kde.dolphin.desktop";
       "text/plain" = "emacsclient.desktop";
@@ -1318,7 +1318,7 @@ xdg.mimeApps = {
   };
   defaultApplications = {
     "application/pdf"="okularApplication_pdf.desktop";
-    "application/xhtml+xml"="firefox.desktop";
+    "application/xhtml+xml"="librewolf.desktop";
     "application/zip"="org.kde.dolphin.desktop";
     "inode/directory"="org.kde.dolphin.desktop";
     "message/rfc822"="thunderbird.desktop";
@@ -1735,6 +1735,13 @@ services = {
 The well-known, open source internet browser.
 #+begin_src nix :noweb-ref hm/desktop
 programs.firefox = {
+  enable = true;
+};
+#+end_src
+
+*** Librewolf
+#+begin_src nix :noweb-ref hm/desktop
+programs.librewolf = {
   enable = true;
 };
 #+end_src
@@ -2198,7 +2205,6 @@ pkgs.thunderbird
 pkgs.mattermost-desktop
 pkgs.element-desktop
 pkgs.zoom-us
-pkgs.librewolf
 pkgs.discord
 #+end_src
 

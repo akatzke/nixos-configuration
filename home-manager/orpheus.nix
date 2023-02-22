@@ -130,7 +130,7 @@ in {
     associations = {
       added = {
         "application/pdf"="okularApplication_pdf.desktop";
-        "application/xhtml+xml" = "firefox.desktop";
+        "application/xhtml+xml" = "librewolf.desktop";
         "application/x-compressed-tar"="org.kde.dolphin.desktop";
         "inode/directory" = "org.kde.dolphin.desktop";
         "text/plain" = "emacsclient.desktop";
@@ -140,7 +140,7 @@ in {
     };
     defaultApplications = {
       "application/pdf"="okularApplication_pdf.desktop";
-      "application/xhtml+xml"="firefox.desktop";
+      "application/xhtml+xml"="librewolf.desktop";
       "application/zip"="org.kde.dolphin.desktop";
       "inode/directory"="org.kde.dolphin.desktop";
       "message/rfc822"="thunderbird.desktop";
@@ -459,6 +459,9 @@ in {
   programs.firefox = {
     enable = true;
   };
+  programs.librewolf = {
+    enable = true;
+  };
   programs.fish.interactiveShellInit = ''
     freshfetch
     # Emulates vim's cursor shape behavior
@@ -589,7 +592,6 @@ in {
     pkgs.mattermost-desktop
     pkgs.element-desktop
     pkgs.zoom-us
-    pkgs.librewolf
     pkgs.discord
     pkgs.spotify
     pkgs.jellyfin-media-player
