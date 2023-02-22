@@ -10,7 +10,7 @@ from libqtile import layout, bar, widget, hook
 from typing import List  # noqa: F401from typing import List  # noqa: F401
 
 my_term = "alacritty"      # My terminal of choice
-my_browser = "firefox"     # My browser of choice
+my_browser = "librewolf"     # My browser of choice
 HOME = os.path.expanduser('~')
 
 layouts = []
@@ -752,7 +752,7 @@ floating_layout = layout.Floating(
         Match(title="Qalculate!"),          # qalculate-gtk
         Match(wm_class="kdenlive"),         # kdenlive
         Match(wm_class="pinentry-gtk-2"),   # GPG key password entry
-        Match(wm_class="librewolf"),
+        Match(title="LibreWolf Private Browsing"),
     ]
 )
 auto_fullscreen = True
