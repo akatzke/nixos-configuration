@@ -312,6 +312,13 @@ in {
     file = ../secrets/outlook.age;
     owner = "${user}";
   };
+  
+  
+  age.secrets.authinfo = {
+    file = ../secrets/authinfo.age;
+    path = "/home/${user}/.authinfo";
+    owner = user;
+  };
   # Enable CUPS to print documents.
   services.printing = {
     enable = true;

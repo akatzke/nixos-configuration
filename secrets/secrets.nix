@@ -16,6 +16,7 @@ let
   desktop_users = [ yusu_hephaestus yusu_orpheus ];
   desktops = [ hephaestus orpheus ];
 in {
+  "authinfo.age".publicKeys = desktop_users ++ desktops;
   "gmail.age".publicKeys = desktop_users ++ desktops;
   "outlook.age".publicKeys = desktop_users ++ desktops;
   "nextcloud.age".publicKeys = desktop_users ++ desktops

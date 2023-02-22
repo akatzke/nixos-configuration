@@ -1458,6 +1458,11 @@ An icon displaying new Emails will appear in the doom modeline, if relevant.
   )
 #+end_src
 
+Set the authentication source.
+#+begin_src elisp
+(setq! auth-sources '("~/.authinfo"))
+#+end_src
+
 ** RSS
 While most RSS feed capabilities, using [[id:0f19ffc8-ac2b-4a5a-84c2-7ef9aa6495ef][elfeed]], are already configured through the =rss= module,
 we adjust some settings here.

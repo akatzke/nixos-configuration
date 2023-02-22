@@ -741,6 +741,8 @@ are exported to a filename derived from the headline text."
          )
   )
 
+(setq! auth-sources '("~/.authinfo"))
+
 (add-hook 'elfeed-search-mode-hook #'elfeed-update)
 
 (map! :leader

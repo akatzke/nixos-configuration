@@ -982,6 +982,17 @@ age.secrets.outlook = {
   file = ../secrets/outlook.age;
   owner = "${user}";
 };
+
+
+#+end_src
+
+Link the secret (and encrypted) =authinfo= file, which stores logins that [[id:6288c98c-cef6-42a1-ac0c-96952ad5a385][Doom-Emacs]] shall remember.
+#+begin_src nix :noweb-ref desktop
+age.secrets.authinfo = {
+  file = ../secrets/authinfo.age;
+  path = "/home/${user}/.authinfo";
+  owner = user;
+};
 #+end_src
 
 #+begin_src nix :noweb-ref sisyphus
@@ -1290,13 +1301,6 @@ This folder includes any scripts, to be used stand-alone or in applications, suc
 xdg.configFile."scripts" = {
   source = ../scripts;
   recursive = true;
-};
-#+end_src
-
-Link the secret (and encrypted) [[file:.secrets/.authinfo.gpg][.authinfo.gpg]] file, which stores logins that [[id:6288c98c-cef6-42a1-ac0c-96952ad5a385][Doom-Emacs]] shall remember.
-#+begin_src nix :noweb-ref hm/desktop
-home.file.".authinfo.gpg" = {
-  source = ../secrets/.authinfo.gpg;
 };
 #+end_src
 

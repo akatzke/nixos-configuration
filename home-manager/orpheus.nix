@@ -122,9 +122,6 @@ in {
       "/home/${user}/.local/bin"
     ];
   };
-  home.file.".authinfo.gpg" = {
-    source = ../secrets/.authinfo.gpg;
-  };
   xdg.mimeApps = {
     enable = true;
     associations = {
