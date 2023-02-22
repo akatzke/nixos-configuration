@@ -1735,14 +1735,6 @@ services = {
 };
 #+end_src
 
-*** Firefox
-The well-known, open source internet browser.
-#+begin_src nix :noweb-ref hm/desktop
-programs.firefox = {
-  enable = true;
-};
-#+end_src
-
 *** Librewolf
 #+begin_src nix :noweb-ref hm/desktop
 programs.librewolf = {

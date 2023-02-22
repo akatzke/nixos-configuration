@@ -453,9 +453,6 @@ in {
       postExec = "${pkgs.mu}/bin/mu index -m ${maildir}";
     };
   };
-  programs.firefox = {
-    enable = true;
-  };
   programs.librewolf = {
     enable = true;
   };
