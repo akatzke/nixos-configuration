@@ -1500,7 +1500,6 @@ Use [[id:cf02b3ea-2a80-46e9-b804-2b101c33ff67][org-appear]] to reveal emphasis m
 
 Use [[id:41d896e4-12f0-46e0-9f19-96373229f371][org-roam-ui]] and unpin [[id:795e639f-cb14-4b5d-a475-ae29ffe67bdc][org-roam]], as is suggested in the documentation for org-roam-ui
 #+begin_src elisp
-;; (unpin! org-roam)
 (package! org-roam-ui)
 #+end_src
 
@@ -1560,11 +1559,6 @@ Use [[id:41d896e4-12f0-46e0-9f19-96373229f371][org-roam-ui]] and unpin [[id:795e
 
 #+begin_src elisp
 (package! activity-watch-mode)
-#+end_src
-
-#+begin_src elisp
-;; (package! transient :pin "c2bdf7e12c530eb85476d3aef317eb2941ab9440")
-;; (package! with-editor :pin "bbc60f68ac190f02da8a100b6fb67cf1c27c53ab")
 #+end_src
 
 ** Notes
