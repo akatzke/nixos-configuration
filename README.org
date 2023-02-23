@@ -21,6 +21,7 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
 :END:
 - [[#hardware-configuration][Hardware Configuration]]
 - [[#flake][Flake]]
+- [[#templates][Templates]]
 - [[#nixos-system-configuration][NixOS System Configuration]]
   - [[#setup][Setup]]
   - [[#general-options][General Options]]
@@ -41,6 +42,7 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
   - [[#secrets][Secrets]]
   - [[#server][Server]]
   - [[#other-services--applications][Other Services & Applications]]
+  - [[#finalize][Finalize]]
 - [[#home-manager][Home Manager]]
   - [[#basic-information][Basic Information]]
   - [[#session-variables][Session Variables]]
@@ -48,6 +50,7 @@ Note that I am by no means an expert on the ~nix~ ecosystem, so the architecture
   - [[#xdg-mime-applications][XDG MIME Applications]]
   - [[#configured-packages-dotfiles][Configured Packages (Dotfiles)]]
   - [[#unconfigured-packages][Unconfigured Packages]]
+  - [[#finalize-1][Finalize]]
 
 * Hardware Configuration
 
@@ -69,8 +72,7 @@ To update the system, this file needs to be updated, which can be done automatic
 You may note that sub-projects, like my ~Qtile~ configuration in [[file:./qtile]], contain their own =flake.nix= file. This is used to declare a development environment for editing that configuration, i.e. ~Python~ with additional packages for formatting and checking in the case of ~Qtile~.
 
 While ~Nix Flakes~ are still considered "experimental", they are widely used by this point and it seems doubtful that they will change in such a manner as to completely break.
-
-#+begin_src nix :noweb yes :tangle flake.nix
+#+begin_src nix :tangle flake.nix
 {
   description = "My NixOS System Configuration";
 
@@ -94,99 +96,149 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database, nix-doom-emacs }: {
-    nixosConfigurations = {
-      hephaestus = let
-        system = "x86_64-linux";
-        hostname = "hephaestus";
-      in nixpkgs.lib.nixosSystem
-        <<flake/core>>
-      ;
-      orpheus = let
-        system = "x86_64-linux";
-        hostname = "orpheus";
-      in nixpkgs.lib.nixosSystem
-        <<flake/core>>
-      ;
-      sisyphus = let
-        system = "aarch64-linux";
-        hostname = "sisyphus";
-      in nixpkgs.lib.nixosSystem
-        <<flake/core>>
-      ;
+  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database
+    , nix-doom-emacs }: {
+      nixosConfigurations = {
+        hephaestus = let
+          system = "x86_64-linux";
+          hostname = "hephaestus";
+        in nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hardware-configuration/${hostname}.nix
+            ./system-configuration/core.nix
+            ./system-configuration/desktop.nix
+            ./system-configuration/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = { ... }: {
+                  imports = [
+                    ./home-manager/core.nix
+                    ./home-manager/desktop.nix
+                    ./home-manager/${hostname}.nix
+                  ];
+                };
+                sharedModules = [
+                  nix-index-database.nixosModules.nix-index
+                  nix-doom-emacs.hmModule
+                ];
+              };
+            }
+            agenix.nixosModules.default
+            {
+              environment.systemPackages =
+                [ agenix.packages."${system}".default ];
+            }
+          ];
+        };
+        orpheus = let
+          system = "x86_64-linux";
+          hostname = "orpheus";
+        in nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hardware-configuration/${hostname}.nix
+            ./system-configuration/core.nix
+            ./system-configuration/desktop.nix
+            ./system-configuration/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = { ... }: {
+                  imports = [
+                    ./home-manager/core.nix
+                    ./home-manager/desktop.nix
+                    ./home-manager/${hostname}.nix
+                  ];
+                };
+                sharedModules = [
+                  nix-index-database.nixosModules.nix-index
+                  nix-doom-emacs.hmModule
+                ];
+              };
+            }
+            agenix.nixosModules.default
+            {
+              environment.systemPackages =
+                [ agenix.packages."${system}".default ];
+            }
+          ];
+        };
+        sisyphus = let
+          system = "aarch64-linux";
+          hostname = "sisyphus";
+        in nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hardware-configuration/${hostname}.nix
+            ./system-configuration/core.nix
+            ./system-configuration/${hostname}.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = { ... }: {
+                  imports =
+                    [ ./home-manager/core.nix ./home-manager/${hostname}.nix ];
+                };
+                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+              };
+            }
+            agenix.nixosModules.default
+            {
+              environment.systemPackages =
+                [ agenix.packages."${system}".default ];
+            }
+          ];
+        };
+      };
     };
-  };
 }
 #+end_src
 
-#+begin_src nix :noweb-ref flake/core
-{
-  inherit system;
-  modules = [
-    ./hardware-configuration/${hostname}.nix
-    ./system-configuration/${hostname}.nix
-    home-manager.nixosModules.home-manager
-    {
-      home-manager = {
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        users.yusu = { ... }: { imports = [ ./home-manager/${hostname}.nix ]; };
-        sharedModules =
-          [ nix-index-database.nixosModules.nix-index nix-doom-emacs.hmModule ];
-      };
-    }
-    agenix.nixosModules.default
-    { environment.systemPackages = [ agenix.packages."${system}".default ]; }
-  ];
-}
+* Templates
+#+name: system-config-preamble
+#+begin_src nix
+{ config, pkgs, age, ... }:
+
+let
+  user = "yusu";
+in {
 #+end_src
 
 * NixOS System Configuration
 :PROPERTIES:
-:header-args: :results none :noweb-ref core
+:header-args: :results none :tangle system-configuration/core.nix
 :END:
 This section relates to all system-wide configurations, e.g. installing system packages, loading fonts, modifying the boot-loader, etc.,
 done in the functional ~nix~ language.
 
 ** Setup
-
-Set up the =noweb-ref= tags that shall be included inside of each system configuration:
-#+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/hephaestus.nix
-{ config, pkgs, age, ... }:
-
-let
-  user = "yusu";
-  system = "x86_64-linux";
-in {
-  <<core>>
-  <<desktop>>
-  <<hephaestus>>
-}
+Set up the system-configuration files that shall be generated:
+#+begin_src nix :noweb yes :tangle system-configuration/core.nix
+<<system-config-preamble>>
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/orpheus.nix
-{ config, pkgs, age, ... }:
-
-let
-  user = "yusu";
-  system = "x86_64-linux";
-in {
-  <<core>>
-  <<desktop>>
-  <<orpheus>>
-}
+#+begin_src nix :noweb yes :tangle system-configuration/desktop.nix
+<<system-config-preamble>>
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref no :tangle system-configuration/sisyphus.nix
-{ config, pkgs, age, ... }:
+#+begin_src nix :noweb yes :tangle system-configuration/hephaestus.nix
+<<system-config-preamble>>
+#+end_src
 
-let
-  user = "yusu";
-  system = "aarch64-linux";
-in {
-  <<core>>
-  <<sisyphus>>
-}
+#+begin_src nix :noweb yes :tangle system-configuration/orpheus.nix
+<<system-config-preamble>>
+#+end_src
+
+#+begin_src nix :noweb yes :tangle system-configuration/sisyphus.nix
+<<system-config-preamble>>
 #+end_src
 
 ** General Options
@@ -220,13 +272,13 @@ nix = {
 #+end_src
 
 Set the system's hostname
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 networking.hostName = "hephaestus"; # Define your hostname.
 #+end_src
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 networking.hostName = "orpheus"; # Define your hostname.
 #+end_src
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 networking.hostName = "sisyphus"; # Define your hostname.
 #+end_src
 
@@ -236,20 +288,20 @@ It‘s perfectly fine and recommended to leave this value at the release version
 Before changing this value read the documentation for this option
 (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
 #+name: set_stateVersion
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 system.stateVersion = "22.05"; # Did you read the comment?
 #+end_src
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 system.stateVersion = "22.11"; # Did you read the comment?
 #+end_src
 
 ** Bootloader & Kernel
 Configure the bootloader.
 If the timeout set here is not being respected within the ~UEFI~ boot menu, press [[kbd:][Shift-t]] until a message appears that says that the timeout is being determined by the configuration file.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 boot.loader = {
   timeout = 2;
 
@@ -270,7 +322,7 @@ boot.loader = {
 };
 #+end_src
 For =sisyphus=, use ~U-Boot~ instead.
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 boot.loader = {
   timeout = 2;
   # Use the extlinux boot loader. (NixOS wants to enable GRUB by default)
@@ -289,16 +341,16 @@ boot.loader = {
 
 Set the Linux kernel version to use.
 I set this to the Zen kernel for my desktop machines, as this is what this version is optimized for.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 #+end_src
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 boot.kernelPackages = pkgs.linuxPackages_rpi4;
 #+end_src
 
 Set the kernel modules.
 The following are only needed for desktop machines.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 boot.kernelModules = [
   # Virtual Camera
   "v4l2loopback"
@@ -308,7 +360,7 @@ boot.kernelModules = [
 #+end_src
 
 Enable v4l2loopback, to use OBS as a virtual camera, following [[https://www.reddit.com/r/NixOS/comments/p8bqvu/comment/htcta90/?utm_source=share&utm_medium=web2x&context=3][this reddit comment]]
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 # Make some extra kernel modules available to NixOS
 boot.extraModulePackages = with config.boot.kernelPackages;
   [ v4l2loopback.out ];
@@ -324,7 +376,7 @@ boot.extraModprobeConfig = ''
 
 Setup keyfile
 /This was set on initial installation of the laptop with full disk encryption./
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 boot.initrd.secrets = {
   "/crypto_keyfile.bin" = null;
 };
@@ -358,7 +410,7 @@ networking.firewall = {
 #+end_src
 
 Open ports for ~KDE-Connect~ on desktop machines.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 networking.firewall = {
   allowedTCPPortRanges = [
     # GS-/KDE-Connect
@@ -372,7 +424,7 @@ networking.firewall = {
 };
 #+end_src
 
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 networking.firewall = {
   allowedTCPPorts = [
     # blocky
@@ -393,7 +445,7 @@ networking.firewall = {
 #+end_src
 
 Enable the Mullvad VPN service
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 services.mullvad-vpn.enable = true;
 #+end_src
 
@@ -418,7 +470,7 @@ i18n.extraLocaleSettings = {
 
 ** X Server (DE, Window Manager, Login Manager, Keyboard Layout)
 Only desktop clients require an X server.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 services.xserver = {
   # Use the X11 Display Server
   enable = true;
@@ -445,28 +497,28 @@ services.xserver = {
 #+end_src
 
 Set the default sessions.
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 services.xserver.displayManager.defaultSession = "none+qtile";
 #+end_src
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 services.xserver.displayManager.defaultSession = "plasmawayland";
 #+end_src
 
 Set the X11 keyboard layout.
 For my =hephaestus= and =sisyphus=, set it to the international version of the US layout for my lily58.
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 services.xserver = {
   layout = "us";
   xkbVariant = "altgr-intl";
 };
 #+end_src
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 services.xserver = {
   layout = "us";
 };
 #+end_src
 For the laptop, use programmer's dvorak
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 services.xserver = {
   layout = "us";
   xkbVariant = "dvp";
@@ -481,13 +533,13 @@ console = {
 #+end_src
 
 For the laptop, enable touchpad support
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 services.xserver.libinput.enable = true;
 #+end_src
 
 ** Gnome
 :PROPERTIES:
-:header-args: :noweb-ref no
+:header-args: :tangle no
 :END:
 Since I am currently no longer using GNOME, this section is not being tangled into the actual configuration file.
 
@@ -536,21 +588,21 @@ Enable automatic garbage collection.
 This deletes old (as specified in the ~options~ variable) generations
 and then deletes all unused entries in the nix store.
 Run it once a week for =Hephaestus= and =Orpheus=, and delete everything older than 14 / 60 days, respectively.
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 nix.gc = {
   automatic = true;
   dates = "weekly";
   options = "--delete-older-than 14d";
 };
 #+end_src
-#+begin_src nix :noweb-ref orpheus
+#+begin_src nix :tangle system-configuration/orpheus.nix
 nix.gc = {
   automatic = true;
   dates = "weekly";
   options = "--delete-older-than 60d";
 };
 #+end_src
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 nix.gc = {
   automatic = true;
   dates = "weekly";
@@ -566,7 +618,7 @@ e.g. updating the system.
 nix.settings.auto-optimise-store = true;
 #+end_src
 Also note that this only affects /newly created/ files, so, to optimize the entire store, one has to run the optimization manually, i.e. through
-#+begin_src sh :noweb-ref no
+#+begin_src sh :tangle no
 sudo nix-store --optimize
 #+end_src
 This operation can take a *long* time, depending on the current size of the store
@@ -579,7 +631,7 @@ This is relatively safe to do when using the stable branch of ~NixOS~, since the
 system.autoUpgrade = {
   enable = true;
   flake = "/etc/nixos";
-  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--update-input" "agenix" "--update-input" "nix-index-database" ];
+  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--update-input" "agenix" "--update-input" "nix-index-database" "--update-input" "nix-doom-emacs" ];
 };
 #+end_src
 
@@ -602,7 +654,7 @@ use the ~fileSystems~ option.
 Mount my media server via ~nfs~.
 Since this requires an internet connection, it is not necessarily a good idea to always mount this on boot.
 Instead, lazy mount it using the ~x-systemd.automount~ option
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 fileSystems."/mnt/Media" = {
   device = "192.168.178.74:/srv/nfs/Media";
   fsType = "nfs";
@@ -612,7 +664,7 @@ fileSystems."/mnt/Media" = {
 
 **** Hephaestus
 :PROPERTIES:
-:header-args: :noweb-ref hephaestus
+:header-args: :tangle system-configuration/hephaestus.nix
 :END:
 Mount home directory
 #+begin_src nix
@@ -634,7 +686,7 @@ fileSystems."/mnt/HDD" = {
 
 **** Sisyphus
 :PROPERTIES:
-:header-args: :noweb-ref sisyphus
+:header-args: :tangle system-configuration/sisyphus.nix
 :END:
 Mount external HDD
 #+begin_src nix
@@ -666,7 +718,7 @@ swapDevices = [
 
 ** Graphics Card & Gaming
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 services.xserver.videoDrivers = [ "nvidia" ];
 hardware.opengl.enable = true;
 hardware.nvidia.powerManagement.enable = true;
@@ -674,7 +726,7 @@ hardware.nvidia.modesetting.enable = true;
 #+end_src
 
 Enable steam on a system level like this, according to https://nixos.wiki/wiki/Steam
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 programs.steam = {
   enable = true;
   remotePlay.openFirewall = true;       # Open ports in the firewall for Steam Remote Play
@@ -683,7 +735,7 @@ programs.steam = {
 #+end_src
 
 Enable GameMode
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 programs.gamemode = {
   enable = true;
 };
@@ -704,24 +756,18 @@ services.syncthing = {
 };
 #+end_src
 
-#+begin_src nix :noweb yes
-services.syncthing.devices =
-  <<devices>>
-;
+#+begin_src nix
+services.syncthing.devices = import ../syncthing/devices.nix;
 #+end_src
-#+begin_src nix :noweb yes :noweb-ref desktop
-services.syncthing.folders =
-  <<folders/desktop>>
-;
+#+begin_src nix :tangle system-configuration/desktop.nix
+services.syncthing.folders = import ../syncthing/folders-desktop.nix;
 #+end_src
-#+begin_src nix :noweb yes :noweb-ref sisyphus
-services.syncthing.folders =
-  <<folders/sisyphus>>
-;
+#+begin_src nix :tangle system-configuration/sisyphus.nix
+services.syncthing.folders = import ../syncthing/folders-sisyphus.nix;
 #+end_src
 
 *** Devices
-#+begin_src nix :noweb-ref devices
+#+begin_src nix :tangle syncthing/devices.nix
 {
   "hephaestus" = {
     id = "3ES4PVE-5VIXFJK-LRUWO6V-R5DXQ2Z-7VDELSG-7UTJH3J-P7FBO5F-7UCB6QY";
@@ -745,6 +791,9 @@ services.syncthing.folders =
 #+end_src
 
 *** Folder Specifications
+:PROPERTIES:
+:header-args: :tangle no
+:END:
 #+begin_src nix :noweb-ref Jonas/org
 "Jonas/org" = { # Name of folder in Syncthing, also the folder ID
   path = "${home}/org"; # Which folder to add to Syncthing
@@ -893,7 +942,7 @@ services.syncthing.folders =
 #+end_src
 
 *** Folder Weaving
-#+begin_src nix :noweb yes :noweb-ref folders/desktop
+#+begin_src nix :noweb yes :tangle syncthing/folders-desktop.nix
 let
   root = "/home/yusu";
   home = "/home/yusu";
@@ -910,7 +959,7 @@ in  {
 }
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref folders/sisyphus
+#+begin_src nix :noweb yes :tangle syncthing/folders-sisyphus.nix
 let
   root = "/mnt/HDD/Syncthing";
   home = "${root}/Jonas";
@@ -932,7 +981,7 @@ in {
 
 ** Udev Rules
 Activate the udev rules necessary for flashing QMK firmware onto my keyboard.
-#+begin_src nix :noweb-ref hephaestus
+#+begin_src nix :tangle system-configuration/hephaestus.nix
 services.udev.packages = [
   pkgs.qmk-udev-rules
 ];
@@ -958,7 +1007,7 @@ users.users.root.hashedPassword = "!";
 #+end_src
 
 Automatically log in to user account on =sisyphus=, without a display manager.
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 services.getty.autologinUser = "${user}";
 #+end_src
 
@@ -970,7 +1019,7 @@ services.openssh = {
 };
 #+end_src
 
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 services.openssh = {
   passwordAuthentication = false;
   kbdInteractiveAuthentication = false;
@@ -978,7 +1027,7 @@ services.openssh = {
 };
 #+end_src
 ** Secrets
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 age.secrets.gmail = {
   file = ../secrets/gmail.age;
   owner = "${user}";
@@ -992,14 +1041,14 @@ age.secrets.outlook = {
 #+end_src
 
 Link the secret (and encrypted) =authinfo= file, which stores logins that [[id:6288c98c-cef6-42a1-ac0c-96952ad5a385][Doom-Emacs]] shall remember.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 age.secrets.authinfo = {
   file = ../secrets/authinfo.age;
   owner = user;
 };
 #+end_src
 
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 age.secrets.nextcloud = {
   file = ../secrets/nextcloud.age;
   owner = "nextcloud";
@@ -1009,7 +1058,7 @@ age.secrets.nextcloud = {
 
 ** Server
 :PROPERTIES:
-:header-args: :noweb-ref sisyphus
+:header-args: :tangle system-configuration/sisyphus.nix
 :END:
 Services that shall run on =sisyphus=.
 
@@ -1138,7 +1187,7 @@ services.nfs.server = {
 #+end_src
 
 ** Other Services & Applications
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 # Enable CUPS to print documents.
 services.printing = {
   enable = true;
@@ -1166,7 +1215,7 @@ services.pipewire = {
 #+end_src
 
 Enable Bluetooth support and blueman as a GUI frontend
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 hardware.bluetooth.enable = true;
 services.blueman.enable = true;
 #+end_src
@@ -1191,7 +1240,7 @@ programs.fish.enable = true;
 
 Enable flatpaks.
 This also requires enabling XDG Desktop Portals.
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 services.flatpak.enable = true;
 xdg.portal = {
   enable = true;
@@ -1200,71 +1249,84 @@ xdg.portal = {
 #+end_src
 
 Enable docker for =sisyphus=.
-#+begin_src nix :noweb-ref sisyphus
+#+begin_src nix :tangle system-configuration/sisyphus.nix
 virtualisation.docker.enable = true;
 #+end_src
 
-#+begin_src nix
-# Some programs need SUID wrappers, can be configured further or are
-# started in user sessions.
-# programs.mtr.enable = true;
-# programs.gnupg.agent = {
-#   enable = true;
-#   enableSSHSupport = true;
-# };
-#+end_src
-
 Enable LanguageTool, a grammar and spelling checker, used e.g. by [[Emacs]] through [[id:268d8c53-f6b2-475a-a289-afc7399c3079][langtool]].
-#+begin_src nix :noweb-ref desktop
+#+begin_src nix :tangle system-configuration/desktop.nix
 services.languagetool = {
   enable = true;
 };
 #+end_src
+** Finalize
+#+begin_src nix :tangle system-configuration/core.nix
+}
+#+end_src
+
+#+begin_src nix :tangle system-configuration/desktop.nix
+}
+#+end_src
+
+#+begin_src nix :tangle system-configuration/hephaestus.nix
+}
+#+end_src
+
+#+begin_src nix :tangle system-configuration/orpheus.nix
+}
+#+end_src
+
+#+begin_src nix :tangle system-configuration/sisyphus.nix
+}
+#+end_src
 
 * Home Manager
 :PROPERTIES:
-:header-args: :noweb-ref hm/core
+:header-args: :tangle home-manager/core.nix
 :END:
 
 In this section, we use Home Manager to configure the home user's environment.
 This mostly includes local packages and dotfiles.
 
 Open the Home Manager context, setting variables for the username, the full name, and the mail directory:
-#+begin_src nix :noweb yes :tangle home-manager/hephaestus.nix :noweb-ref no
+#+begin_src nix :tangle home-manager/core.nix
 { osConfig, config, pkgs, ... }:
 let
   user = "yusu";
-  maildir = "/home/yusu/.mail";
   name = "Jonas Opitz";
 in {
-  <<hm/core>>
-  <<hm/desktop>>
-  <<hm/hephaestus>>
-}
 #+end_src
 
-#+begin_src nix :noweb yes :tangle home-manager/orpheus.nix :noweb-ref no
+#+begin_src nix :tangle home-manager/desktop.nix
 { osConfig, config, pkgs, ... }:
 let
   user = "yusu";
-  maildir = "/home/yusu/.mail";
   name = "Jonas Opitz";
 in {
-  <<hm/core>>
-  <<hm/desktop>>
-  <<hm/orpheus>>
-}
 #+end_src
 
-#+begin_src nix :noweb yes :tangle home-manager/sisyphus.nix :noweb-ref no
+#+begin_src nix :tangle home-manager/hephaestus.nix
 { osConfig, config, pkgs, ... }:
 let
   user = "yusu";
   name = "Jonas Opitz";
 in {
-  <<hm/core>>
-  <<hm/sisyphus>>
-}
+#+end_src
+
+#+begin_src nix :tangle home-manager/orpheus.nix
+{ osConfig, config, pkgs, ... }:
+let
+  user = "yusu";
+  name = "Jonas Opitz";
+in {
+#+end_src
+
+#+begin_src nix :tangle home-manager/sisyphus.nix
+{ osConfig, config, pkgs, ... }:
+let
+  user = "yusu";
+  name = "Jonas Opitz";
+in {
 #+end_src
 
 ** Basic Information
@@ -1276,19 +1338,19 @@ home.homeDirectory = "/home/${user}";
 
 Similarly to [[set_stateVersion]] for ~NixOS~, set the ~stateVersion~ for ~Home Manager~.
 This should not be change after an install.
-#+begin_src nix :noweb-ref hm/hephaestus
+#+begin_src nix :tangle home-manager/hephaestus.nix
 home.stateVersion = "22.05";
 #+end_src
-#+begin_src nix :noweb-ref hm/orpheus
+#+begin_src nix :tangle home-manager/orpheus.nix
 home.stateVersion = "22.11";
 #+end_src
-#+begin_src nix :noweb-ref hm/sisyphus
+#+begin_src nix :tangle home-manager/sisyphus.nix
 home.stateVersion = "22.11";
 #+end_src
 
 ** Session Variables
 Add Doom-Emacs' and custom binaries to the path.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 home = {
   sessionPath = [
     "/home/${user}/.emacs.d/bin"
@@ -1310,7 +1372,7 @@ xdg.configFile."scripts" = {
 
 ** XDG MIME Applications
 Associate applications with file types and set default applications.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 xdg.mimeApps = {
   enable = true;
   associations = {
@@ -1342,7 +1404,7 @@ xdg.mimeApps = {
 
 *** Alacritty
 [[https://alacritty.org/][Alacritty]] is my terminal emulator of choice.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 programs.alacritty = {
   enable = true;
   settings = {
@@ -1379,7 +1441,7 @@ programs.alacritty = {
 
 *** Autorandr
 [[https://github.com/phillipberndt/autorandr#readme][Autorandr]] is a utility for xorg and randr that aids in managing monitor profiles.
-#+begin_src nix :noweb yes :noweb-ref hm/desktop
+#+begin_src nix :noweb yes :tangle home-manager/desktop.nix
 programs.autorandr = {
   enable = true;
   profiles = {
@@ -1394,7 +1456,6 @@ programs.autorandr = {
 :PROPERTIES:
 :header-args: :tangle no :noweb yes :noweb-ref autorandr_profiles
 :END:
-
 #+begin_src nix
 "three_sub_cloned" = {
   <<autorandr_fingerprint_three>>
@@ -1645,7 +1706,7 @@ programs.direnv = {
 :END:
 Doom-Emacs is a configuration framework for Emacs, a highly extensible +operating system+ text editor.
 
-#+begin_src nix :noweb yes :noweb-ref hm/desktop
+#+begin_src nix :noweb yes :tangle home-manager/desktop.nix
 programs.doom-emacs = {
   enable = true;
   doomPrivateDir = ../doom;
@@ -1773,7 +1834,7 @@ $DOOM/bin/doom sync
 
 *** Dunst
 [[id:2231a333-9429-4680-bcfa-dc00d4dd46e2][Dunst]] is a lightweight notification daemon.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 services.dunst = {
   enable = true;
 };
@@ -1781,9 +1842,9 @@ services.dunst = {
 
 *** Email
 See [[id:87c13fe4-6026-436e-809e-236e74ff0ec4][secret configuration]] for the specification of the email accounts.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 accounts.email = {
-  maildirBasePath = "${maildir}";
+  maildirBasePath = "/home/${user}/.mail";
   accounts = {
     Outlook = {
       address = "jonas.opitz@live.de";
@@ -1825,13 +1886,13 @@ services = {
   mbsync = {
     enable = false;
     preExec = "${pkgs.isync}/bin/mbsync -Ha";
-    postExec = "${pkgs.mu}/bin/mu index -m ${maildir}";
+    postExec = "${pkgs.mu}/bin/mu index -m /home/${user}/.mail";
   };
 };
 #+end_src
 
 *** Librewolf
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 programs.librewolf = {
   enable = true;
 };
@@ -1848,7 +1909,7 @@ programs.fish.enable = true;
 
 **** Initialization
 When starting an interactive fish shell, use [[https://github.com/K4rakara/freshfetch/tree/ace04ea8b0eb55d1deee6ad2daa3f45cc913f5ab][freshfetch]] to print some system information.
-#+begin_src nix :noweb yes :noweb-ref hm/desktop
+#+begin_src nix :noweb yes :tangle home-manager/desktop.nix
 programs.fish.interactiveShellInit = ''
   <<fish_init>>
   set EDITOR devour emacsclient -c
@@ -1856,7 +1917,7 @@ programs.fish.interactiveShellInit = ''
 '';
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref hm/sisyphus
+#+begin_src nix :noweb yes :tangle home-manager/sisyphus.nix
 programs.fish.interactiveShellInit = ''
   <<fish_init>>
   set EDITOR vim
@@ -1977,7 +2038,7 @@ programs.starship = {
 *** Gammastep
 [[https://gitlab.com/chinstrap/gammastep][Gammastep]] is a utility that gradually adjusts the color temperature and brightness of the screen,
 based on time or location.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 services.gammastep = {
   enable = false;
   latitude  = 52.5;
@@ -2011,10 +2072,10 @@ services.gpg-agent = {
 #+end_src
 
 Set the pinentry application.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 services.gpg-agent.pinentryFlavor = "qt";
 #+end_src
-#+begin_src nix :noweb-ref hm/sisyphus
+#+begin_src nix :tangle home-manager/sisyphus.nix
 services.gpg-agent.pinentryFlavor = "curses";
 #+end_src
 *** Git
@@ -2030,7 +2091,7 @@ programs.git = {
 [[https://kdeconnect.kde.org/][KDE Connect]] is an application that allows for interactions between devices, e.g. phones and pcs.
 For example, it lets you share the clipboard, send files, and use your phone as a remote.
 Note that in addition to enabling it here, firewall exceptions in [[Networking]] have to be added as well.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 services.kdeconnect = {
   enable = true;
   indicator = true;
@@ -2039,7 +2100,7 @@ services.kdeconnect = {
 
 *** MangoHud
 [[https://github.com/flightlessmango/MangoHud#readme][MangoHud]] is an FPS and general performance overlay for OpenGL and Vulkan applications.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 programs.mangohud = {
   enable = true;
   enableSessionWide = false;
@@ -2052,7 +2113,7 @@ programs.mangohud = {
 #+end_src
 
 *** MPV
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 programs.mpv = {
   enable = true;
 };
@@ -2073,7 +2134,7 @@ programs.nix-index = {
 *** OBS
 [[https://obsproject.com/][OBS]] is THE (open source) video recording and live streaming software.
 It can also be used as a [[id:dc74d473-b14a-4fe4-886b-70f2ef47de8a][virtual webcam]], e.g. to crop the output of a camera or apply filters.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 programs.obs-studio = {
   enable = true;
 };
@@ -2081,7 +2142,7 @@ programs.obs-studio = {
 
 *** Picom
 [[id:5668a1ae-defa-434f-bb47-7ab70d1d0297][Picom]] is an X11 compositor.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 services.picom = {
   enable = true;
   backend = "glx";
@@ -2115,7 +2176,7 @@ services.picom = {
 [[id:69a95dd3-413f-4d2e-9d6f-0fdba7f76e9e][Qtile]] is my window manager of choice, since its configuration is easy (for me) and its dynamic window management is useful.
 Since Home-Manager does not contain a module for Qtile, simple link the configuration directories.
 The literate configuration can be found in [[file:./qtile/README.org]].
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 xdg.configFile."qtile" = {
   source = ../qtile;
   recursive = true;
@@ -2124,7 +2185,7 @@ xdg.configFile."qtile" = {
 
 *** Rofi
 [[id:74b3949c-8520-43e8-ac26-10e7b3589eb7][rofi]] is an alternative to the popular application launcher ~dmenu~.
-#+begin_src nix :noweb-ref hm/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 programs.rofi = {
   enable = true;
   font = "Fira Code Nerd Font 10";
@@ -2214,7 +2275,7 @@ services.kanshi = {
 
 *** Vale
 :PROPERTIES:
-:header-args: :noweb-ref hm/desktop
+:header-args: :tangle home-manager/desktop.nix
 :END:
 [[id:3780dd1f-073c-4440-a9eb-a771e31c0792][Vale]] is a code-linting style cli for prose.
 Since there is no Home Manager module available, it needs to be installed as a normal package.
@@ -2268,36 +2329,33 @@ This does not include packages like fish, as there are added automatically throu
 nixpkgs.config.allowUnfree = true;
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref hm/hephaestus
+#+begin_src nix :tangle home-manager/core.nix
 home.packages = [
-  <<hm/pkgs/core>>
-  <<hm/pkgs/desktop>>
-  <<hm/pkgs/hephaestus>>
-];
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref hm/orpheus
+#+begin_src nix :tangle home-manager/desktop.nix
 home.packages = [
-  <<hm/pkgs/core>>
-  <<hm/pkgs/desktop>>
-  <<hm/pkgs/orpheus>>
-];
 #+end_src
 
-#+begin_src nix :noweb yes :noweb-ref hm/sisyphus
+#+begin_src nix :tangle home-manager/hephaestus.nix
 home.packages = [
-  <<hm/pkgs/core>>
-  <<hm/pkgs/sisyphus>>
-];
+#+end_src
+
+#+begin_src nix :tangle home-manager/orpheus.nix
+home.packages = [
+#+end_src
+
+#+begin_src nix :tangle home-manager/sisyphus.nix
+home.packages = [
 #+end_src
 
 *** List of Packages
 :PROPERTIES:
-:header-args: :tangle no :noweb-ref hm/pkgs/core
+:header-args: :tangle home-manager/core.nix
 :END:
 
 **** Office, Mail, Messengers
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 pkgs.libreoffice-fresh
 pkgs.okular
 pkgs.thunderbird
@@ -2308,7 +2366,7 @@ pkgs.discord
 #+end_src
 
 **** Gaming
-#+begin_src nix :noweb-ref hm/pkgs/hephaestus
+#+begin_src nix :tangle home-manager/hephaestus.nix
 pkgs.heroic
 pkgs.gamescope
 pkgs.yuzu-mainline
@@ -2317,19 +2375,19 @@ pkgs.protonup-ng
 #+end_src
 
 **** Multimedia
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 pkgs.spotify
 pkgs.jellyfin-media-player
 #+end_src
 
-#+begin_src nix :noweb-ref hm/pkgs/hephaestus
+#+begin_src nix :tangle home-manager/hephaestus.nix
 pkgs.yacreader
 pkgs.transgui
 #+end_src
 
 **** CLI Tools
 Controlling media / volume
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 pkgs.playerctl
 pkgs.pamixer
 pkgs.pavucontrol
@@ -2351,12 +2409,12 @@ pkgs.glances
 #+end_src
 
 CLI for mullvad VPN
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 pkgs.mullvad
 #+end_src
 
 Swallow terminal when using it to launch GUI applications
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 pkgs.devour
 #+end_src
 
@@ -2372,7 +2430,7 @@ pkgs.freshfetch
 #+end_src
 
 [[id:080be9ce-24ea-4a89-a21f-aeb9a090faa4][Ledger]]: Plain Text Accounting
-#+begin_src nix :noweb-ref /hm/pkgs/desktop
+#+begin_src nix :noweb-ref /hm/desktop
 pkgs.ledger
 #+end_src
 
@@ -2382,19 +2440,19 @@ pkgs.ripgrep
 #+end_src
 
 **** Others
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 # screenshots
 pkgs.libsForQt5.spectacle
 # qt-based pin entry
 pkgs.pinentry_qt
 #+end_src
 
-#+begin_src nix :noweb-ref hm/pkgs/sisyphus
+#+begin_src nix :tangle home-manager/sisyphus.nix
 pkgs.pinentry-curses
 pkgs.blocky
 #+end_src
 
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 # spellcheckers
 pkgs.hunspell
 pkgs.hunspellDicts.de_DE
@@ -2403,7 +2461,7 @@ pkgs.vale
 #+end_src
 
 **** LaTeX
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 (let
   tex = (pkgs.texlive.combine {
     inherit (pkgs.texlive)
@@ -2421,7 +2479,7 @@ in tex) pkgs.biber pkgs.texlab
 
 **** Dependencies
 ***** Qtile
-#+begin_src nix :noweb-ref hm/pkgs/desktop
+#+begin_src nix :tangle home-manager/desktop.nix
 pkgs.feh
 pkgs.rofi
 #+end_src
@@ -2436,4 +2494,44 @@ pkgs.river
 pkgs.waybar
 pkgs.python3
 #+end_src
+*** Finalize
+#+begin_src nix :tangle home-manager/core.nix
+];
+#+end_src
 
+#+begin_src nix :tangle home-manager/desktop.nix
+];
+#+end_src
+
+#+begin_src nix :tangle home-manager/hephaestus.nix
+];
+#+end_src
+
+#+begin_src nix :tangle home-manager/orpheus.nix
+];
+#+end_src
+
+#+begin_src nix :tangle home-manager/sisyphus.nix
+];
+#+end_src
+
+** Finalize
+#+begin_src nix :noweb yes :tangle home-manager/core.nix
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle home-manager/desktop.nix
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle home-manager/hephaestus.nix
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle home-manager/orpheus.nix
+}
+#+end_src
+
+#+begin_src nix :noweb yes :tangle home-manager/sisyphus.nix
+}
+#+end_src
