@@ -698,6 +698,7 @@ are exported to a filename derived from the headline text."
 (use-package org-fc
   :after org
   :custom
+  (org-fc-source-path "/home/yusu/git/org-fc")
   (org-fc-directories '("~/org-roam/"))
   ;; symmetrical fuzzy interval, larger than the default
   (org-fc-algo-sm2-fuzz-max 1.2)
