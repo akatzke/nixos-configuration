@@ -25,7 +25,7 @@
 (global-whitespace-mode -1)
 
 (use-package! activity-watch-mode
-  :defer nil
+  :after magit
   :init
   (global-activity-watch-mode)
   )
