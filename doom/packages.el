@@ -2,9 +2,7 @@
 
 (package! zoxide)
 
-(package! org-appear
-  :recipe (:host github
-           :repo "awth13/org-appear"))
+(package! org-appear)
 
 (package! org-roam-ui)
 
@@ -28,7 +26,5 @@
 
 (package! company-prescient)
 (package! vertico-prescient)
-
-(package! emacsql-sqlite3)
 
 (package! activity-watch-mode)

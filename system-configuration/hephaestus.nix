@@ -316,7 +316,6 @@ in {
   
   age.secrets.authinfo = {
     file = ../secrets/authinfo.age;
-    path = "/home/${user}/.authinfo";
     owner = user;
   };
   # Enable CUPS to print documents.

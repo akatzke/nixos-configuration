@@ -88,9 +88,13 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-doom-emacs = {
+      url = "github:nix-community/nix-doom-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database }: {
+  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database, nix-doom-emacs }: {
     nixosConfigurations = {
       hephaestus = let
         system = "x86_64-linux";
@@ -126,8 +130,9 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
-        users.yusu = import ./home-manager/${hostname}.nix;
-        sharedModules = [ nix-index-database.nixosModules.nix-index ];
+        users.yusu = { ... }: { imports = [ ./home-manager/${hostname}.nix ]; };
+        sharedModules =
+          [ nix-index-database.nixosModules.nix-index nix-doom-emacs.hmModule ];
       };
     }
     agenix.nixosModules.default
@@ -990,7 +995,6 @@ Link the secret (and encrypted) =authinfo= file, which stores logins that [[id:6
 #+begin_src nix :noweb-ref desktop
 age.secrets.authinfo = {
   file = ../secrets/authinfo.age;
-  path = "/home/${user}/.authinfo";
   owner = user;
 };
 #+end_src
@@ -1637,9 +1641,100 @@ programs.direnv = {
 *** Doom-Emacs
 :PROPERTIES:
 :ID:       6288c98c-cef6-42a1-ac0c-96952ad5a385
-:header-args: :noweb-ref hm/desktop
+:header-args: :noweb-ref no
 :END:
 Doom-Emacs is a configuration framework for Emacs, a highly extensible +operating system+ text editor.
+
+#+begin_src nix :noweb yes :noweb-ref hm/desktop
+programs.doom-emacs = {
+  enable = true;
+  doomPrivateDir = ../doom;
+  doomPackageDir = pkgs.linkFarm "doom-packages" [
+    # straight needs a (possibly empty) `config.el` file to build
+    { name = "config.el"; path = pkgs.emptyFile; }
+    { name = "init.el"; path = ../doom/init.el; }
+    { name = "packages.el"; path = ../doom/packages.el; }
+  ];
+
+  # external dependencies that I don't want to install globally
+  extraPackages = [
+    # emacs everywhere
+    pkgs.xorg.xwininfo
+    pkgs.xdotool
+    pkgs.xclip
+    # nix formatter
+    pkgs.nixfmt
+    # shell formatting / linting
+    pkgs.shfmt
+    pkgs.shellcheck
+    # C compiler e.g. to compile EmacSQL
+    pkgs.gcc
+    # for the email client mu4e
+    pkgs.mu
+    pkgs.isync
+  ];
+  # the following elisp code is appended to [[file:doom/config.el][config.el]].
+  # this is useful for setting paths to executables that are not globally installed
+  # (i.e. the packages listed in extraPackages)
+  extraConfig = ''
+    <<doom/extraConfig>>
+  '';
+
+  emacsPackagesOverlay = self: super: {
+    org-media-note = self.trivialBuild {
+      pname = "org-media-note";
+      ename = "org-media-note";
+      buildInputs = [ self.org-ref ];
+      packageRequires = [  self.mpv self.pretty-hydra ];
+      src = pkgs.fetchFromGitHub {
+        owner = "yuchen-lea";
+        repo = "org-media-note";
+        rev = "dd458c3260530d1866eaa0cde4b1bb71c6f8cf0e";
+        hash = "sha256-h/PtuhhhNEG77RBp3UvIeIwZu0iMP/MJJBo44LqhlRM=";
+      };
+    };
+    org-fc = self.trivialBuild {
+      pname = "org-fc";
+      ename = "org-fc";
+      packageRequires = [ self.hydra ];
+      src = pkgs.fetchFromGitHub {
+        owner = "l3kn";
+        repo = "org-fc";
+        rev = "973a16a9561f1ed2fd7e4c5c614b5e5d15715b12";
+        hash = "sha256-UfAvlt+TzE8+zs5esb2CI/Z1WUbl3nNqCDkw7irXkh0=";
+      };
+    };
+    salv = self.trivialBuild {
+      pname = "salv";
+      ename = "salv";
+      src = pkgs.fetchFromGitHub {
+        owner = "alphapapa";
+        repo = "salv.el";
+        rev = "4797f8d06a8a1a3b44e120b3ad6f6da557818ea1";
+        hash = "sha256-MdS+m6NgAV8ewej1WDSlABu73tlZ2kidw25pV4DAlwI=";
+      };
+    };
+    org-auto-tangle = self.trivialBuild {
+      pname = "org-auto-tangle";
+      ename = "org-auto-tangle";
+      packageRequires = [ self.async self.cl-lib self.org ];
+      src = pkgs.fetchFromGitHub {
+        owner = "yilkalargaw";
+        repo = "org-auto-tangle";
+        rev = "817eabf902e759e96782bdc54d2dab36c4a2c5ab";
+        hash = "sha256-xcNMlY+hYxFF9U9iiAEbUaQ9BY6jIxRc87lZDUqXfeU=";
+      };
+    };
+  };
+};
+#+end_src
+
+#+name: doom/extraConfig
+#+begin_src elisp :tangle no
+(setq! auth-sources '("${osConfig.age.secrets.authinfo.path}"))
+(setq! mu4e-mu-binary "${pkgs.mu}/bin/mu")
+(setq! nix-nixfmt-bin "${pkgs.nixfmt}/bin/nixfmt")
+#+end_src
 
 **** Installation
 #+name: emacs_install
@@ -1956,6 +2051,13 @@ programs.mangohud = {
 };
 #+end_src
 
+*** MPV
+#+begin_src nix :noweb-ref hm/desktop
+programs.mpv = {
+  enable = true;
+};
+#+end_src
+
 *** Numlock
 Enable the Num Lock by default.
 #+begin_src nix
@@ -2197,6 +2299,7 @@ home.packages = [
 **** Office, Mail, Messengers
 #+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.libreoffice-fresh
+pkgs.okular
 pkgs.thunderbird
 pkgs.mattermost-desktop
 pkgs.element-desktop
@@ -2217,7 +2320,6 @@ pkgs.protonup-ng
 #+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.spotify
 pkgs.jellyfin-media-player
-pkgs.okular
 #+end_src
 
 #+begin_src nix :noweb-ref hm/pkgs/hephaestus
@@ -2243,7 +2345,7 @@ Fuzzy file finder
 pkgs.fzf
 #+end_src
 
-A system monitor
+A CLI system monitor
 #+begin_src nix
 pkgs.glances
 #+end_src
@@ -2264,9 +2366,19 @@ pkgs.zip
 pkgs.unzip
 #+end_src
 
-Fetcher
+Faster alternative to Neofetch
 #+begin_src nix
 pkgs.freshfetch
+#+end_src
+
+[[id:080be9ce-24ea-4a89-a21f-aeb9a090faa4][Ledger]]: Plain Text Accounting
+#+begin_src nix :noweb-ref /hm/pkgs/desktop
+pkgs.ledger
+#+end_src
+
+#+begin_src nix
+pkgs.fd
+pkgs.ripgrep
 #+end_src
 
 **** Others
@@ -2280,6 +2392,14 @@ pkgs.pinentry_qt
 #+begin_src nix :noweb-ref hm/pkgs/sisyphus
 pkgs.pinentry-curses
 pkgs.blocky
+#+end_src
+
+#+begin_src nix :noweb-ref hm/pkgs/desktop
+# spellcheckers
+pkgs.hunspell
+pkgs.hunspellDicts.de_DE
+pkgs.hunspellDicts.en_US
+pkgs.vale
 #+end_src
 
 **** LaTeX
@@ -2300,37 +2420,6 @@ in tex) pkgs.biber pkgs.texlab
 #+end_src
 
 **** Dependencies
-***** Doom Emacs
-#+begin_src nix :noweb-ref hm/pkgs/desktop
-# general
-pkgs.fd
-pkgs.ripgrep
-pkgs.sqlite
-# emacs everywhere
-pkgs.xorg.xwininfo
-pkgs.xdotool
-pkgs.xclip
-# nix formatter
-pkgs.nixfmt
-# shell formatting / linting
-pkgs.shfmt
-pkgs.shellcheck
-# C compiler e.g. to compile EmacSQL
-pkgs.gcc
-# for the email client mu4e
-pkgs.mu
-pkgs.isync
-# plain text accounting
-pkgs.ledger
-# spellcheckers
-pkgs.hunspell
-pkgs.hunspellDicts.de_DE
-pkgs.hunspellDicts.en_US
-pkgs.vale
-# for org-media-notes
-pkgs.mpv
-#+end_src
-
 ***** Qtile
 #+begin_src nix :noweb-ref hm/pkgs/desktop
 pkgs.feh

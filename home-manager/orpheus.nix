@@ -396,13 +396,88 @@ in {
       };
     };
   };
-  programs.emacs = {
+  programs.doom-emacs = {
     enable = true;
-    package = pkgs.emacs;
-  };
-  home.file.".doom.d" = {
-    source = ../doom;
-    recursive = true;
+    doomPrivateDir = ../doom;
+    doomPackageDir = pkgs.linkFarm "doom-packages" [
+      # straight needs a (possibly empty) `config.el` file to build
+      { name = "config.el"; path = pkgs.emptyFile; }
+      { name = "init.el"; path = ../doom/init.el; }
+      { name = "packages.el"; path = ../doom/packages.el; }
+    ];
+  
+    # external dependencies that I don't want to install globally
+    extraPackages = [
+      # emacs everywhere
+      pkgs.xorg.xwininfo
+      pkgs.xdotool
+      pkgs.xclip
+      # nix formatter
+      pkgs.nixfmt
+      # shell formatting / linting
+      pkgs.shfmt
+      pkgs.shellcheck
+      # C compiler e.g. to compile EmacSQL
+      pkgs.gcc
+      # for the email client mu4e
+      pkgs.mu
+      pkgs.isync
+    ];
+    # the following elisp code is appended to [[file:doom/config.el][config.el]].
+    # this is useful for setting paths to executables that are not globally installed
+    # (i.e. the packages listed in extraPackages)
+    extraConfig = ''
+      (setq! auth-sources '("${osConfig.age.secrets.authinfo.path}"))
+      (setq! mu4e-mu-binary "${pkgs.mu}/bin/mu")
+      (setq! nix-nixfmt-bin "${pkgs.nixfmt}/bin/nixfmt")
+    '';
+  
+    emacsPackagesOverlay = self: super: {
+      org-media-note = self.trivialBuild {
+        pname = "org-media-note";
+        ename = "org-media-note";
+        buildInputs = [ self.org-ref ];
+        packageRequires = [  self.mpv self.pretty-hydra ];
+        src = pkgs.fetchFromGitHub {
+          owner = "yuchen-lea";
+          repo = "org-media-note";
+          rev = "dd458c3260530d1866eaa0cde4b1bb71c6f8cf0e";
+          hash = "sha256-h/PtuhhhNEG77RBp3UvIeIwZu0iMP/MJJBo44LqhlRM=";
+        };
+      };
+      org-fc = self.trivialBuild {
+        pname = "org-fc";
+        ename = "org-fc";
+        packageRequires = [ self.hydra ];
+        src = pkgs.fetchFromGitHub {
+          owner = "l3kn";
+          repo = "org-fc";
+          rev = "973a16a9561f1ed2fd7e4c5c614b5e5d15715b12";
+          hash = "sha256-UfAvlt+TzE8+zs5esb2CI/Z1WUbl3nNqCDkw7irXkh0=";
+        };
+      };
+      salv = self.trivialBuild {
+        pname = "salv";
+        ename = "salv";
+        src = pkgs.fetchFromGitHub {
+          owner = "alphapapa";
+          repo = "salv.el";
+          rev = "4797f8d06a8a1a3b44e120b3ad6f6da557818ea1";
+          hash = "sha256-MdS+m6NgAV8ewej1WDSlABu73tlZ2kidw25pV4DAlwI=";
+        };
+      };
+      org-auto-tangle = self.trivialBuild {
+        pname = "org-auto-tangle";
+        ename = "org-auto-tangle";
+        packageRequires = [ self.async self.cl-lib self.org ];
+        src = pkgs.fetchFromGitHub {
+          owner = "yilkalargaw";
+          repo = "org-auto-tangle";
+          rev = "817eabf902e759e96782bdc54d2dab36c4a2c5ab";
+          hash = "sha256-xcNMlY+hYxFF9U9iiAEbUaQ9BY6jIxRc87lZDUqXfeU=";
+        };
+      };
+    };
   };
   services.dunst = {
     enable = true;
@@ -504,6 +579,9 @@ in {
       };
     };
   };
+  programs.mpv = {
+    enable = true;
+  };
   programs.obs-studio = {
     enable = true;
   };
@@ -581,7 +659,10 @@ in {
     pkgs.zip
     pkgs.unzip
     pkgs.freshfetch
+    pkgs.fd
+    pkgs.ripgrep
     pkgs.libreoffice-fresh
+    pkgs.okular
     pkgs.thunderbird
     pkgs.mattermost-desktop
     pkgs.element-desktop
@@ -589,7 +670,6 @@ in {
     pkgs.discord
     pkgs.spotify
     pkgs.jellyfin-media-player
-    pkgs.okular
     pkgs.playerctl
     pkgs.pamixer
     pkgs.pavucontrol
@@ -599,6 +679,11 @@ in {
     pkgs.libsForQt5.spectacle
     # qt-based pin entry
     pkgs.pinentry_qt
+    # spellcheckers
+    pkgs.hunspell
+    pkgs.hunspellDicts.de_DE
+    pkgs.hunspellDicts.en_US
+    pkgs.vale
     (let
       tex = (pkgs.texlive.combine {
         inherit (pkgs.texlive)
@@ -612,33 +697,6 @@ in {
           limecv xstring titlesec textpos;
       });
     in tex) pkgs.biber pkgs.texlab
-    # general
-    pkgs.fd
-    pkgs.ripgrep
-    pkgs.sqlite
-    # emacs everywhere
-    pkgs.xorg.xwininfo
-    pkgs.xdotool
-    pkgs.xclip
-    # nix formatter
-    pkgs.nixfmt
-    # shell formatting / linting
-    pkgs.shfmt
-    pkgs.shellcheck
-    # C compiler e.g. to compile EmacSQL
-    pkgs.gcc
-    # for the email client mu4e
-    pkgs.mu
-    pkgs.isync
-    # plain text accounting
-    pkgs.ledger
-    # spellcheckers
-    pkgs.hunspell
-    pkgs.hunspellDicts.de_DE
-    pkgs.hunspellDicts.en_US
-    pkgs.vale
-    # for org-media-notes
-    pkgs.mpv
     pkgs.feh
     pkgs.rofi
     

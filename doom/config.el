@@ -447,7 +447,7 @@ to manually add one myself."
   )
 
 (setq! org-roam-directory (file-truename "~/org-roam")
-       org-roam-database-connector 'sqlite3)
+       )
 
 (org-roam-db-autosync-mode)
 
@@ -755,24 +755,25 @@ are exported to a filename derived from the headline text."
   :desc "Calc in whole buffer" "C" #'full-calc
   ))
 
-(set-email-account!
- "outlook"
- '((mu4e-sent-folder       . "/Outlook/Sent")
-   (mu4e-drafts-folder     . "/Outlook/Drafts")
-   (mu4e-trash-folder      . "/Outlook/Deleted")
-   (mu4e-refile-folder     . "/Outlook/Inbox")
-   )
- t
- )
-
 (use-package! mu4e
+  :defer t
   :config
+  ;; Update ~mu4e~ automatically, in the background.
+  ;; An icon displaying new Emails will appear in the doom modeline, if relevant.
   (setq! mu4e-update-interval 300
          message-send-mail-function 'message-send-mail-with-sendmail
          )
-  )
 
-(setq! auth-sources '("~/.authinfo"))
+  (set-email-account!
+   "outlook"
+   '((mu4e-sent-folder       . "/Outlook/Sent")
+     (mu4e-drafts-folder     . "/Outlook/Drafts")
+     (mu4e-trash-folder      . "/Outlook/Deleted")
+     (mu4e-refile-folder     . "/Outlook/Inbox")
+     )
+   t
+   )
+  )
 
 (add-hook 'elfeed-search-mode-hook #'elfeed-update)
 

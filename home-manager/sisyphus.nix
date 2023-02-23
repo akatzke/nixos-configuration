@@ -138,6 +138,8 @@ in {
     pkgs.zip
     pkgs.unzip
     pkgs.freshfetch
+    pkgs.fd
+    pkgs.ripgrep
     pkgs.pinentry-curses
     pkgs.blocky
   ];

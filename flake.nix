@@ -15,9 +15,13 @@
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-doom-emacs = {
+      url = "github:nix-community/nix-doom-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database }: {
+  outputs = { self, nixpkgs, home-manager, agenix, nix-index-database, nix-doom-emacs }: {
     nixosConfigurations = {
       hephaestus = let
         system = "x86_64-linux";
@@ -33,8 +37,9 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.yusu = import ./home-manager/${hostname}.nix;
-                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+                users.yusu = { ... }: { imports = [ ./home-manager/${hostname}.nix ]; };
+                sharedModules =
+                  [ nix-index-database.nixosModules.nix-index nix-doom-emacs.hmModule ];
               };
             }
             agenix.nixosModules.default
@@ -56,8 +61,9 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.yusu = import ./home-manager/${hostname}.nix;
-                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+                users.yusu = { ... }: { imports = [ ./home-manager/${hostname}.nix ]; };
+                sharedModules =
+                  [ nix-index-database.nixosModules.nix-index nix-doom-emacs.hmModule ];
               };
             }
             agenix.nixosModules.default
@@ -79,8 +85,9 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.yusu = import ./home-manager/${hostname}.nix;
-                sharedModules = [ nix-index-database.nixosModules.nix-index ];
+                users.yusu = { ... }: { imports = [ ./home-manager/${hostname}.nix ]; };
+                sharedModules =
+                  [ nix-index-database.nixosModules.nix-index nix-doom-emacs.hmModule ];
               };
             }
             agenix.nixosModules.default

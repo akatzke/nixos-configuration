@@ -1040,7 +1040,7 @@ Add some keybinds to org-mode for literate programming using [[id:c9383453-3344-
 Set the directory of the org-roam notes
 #+BEGIN_SRC elisp
 (setq! org-roam-directory (file-truename "~/org-roam")
-       org-roam-database-connector 'sqlite3)
+       )
 #+end_src
 
 Automatically synchronize the org-roam database
@@ -1453,31 +1453,25 @@ Bind keys to open [[id:68f3141d-a5ad-4be3-99aa-366d4044be6a][emacs-calc]]
 ** Email
 Configure Email accounts and locations
 #+begin_src elisp
-(set-email-account!
- "outlook"
- '((mu4e-sent-folder       . "/Outlook/Sent")
-   (mu4e-drafts-folder     . "/Outlook/Drafts")
-   (mu4e-trash-folder      . "/Outlook/Deleted")
-   (mu4e-refile-folder     . "/Outlook/Inbox")
-   )
- t
- )
-#+end_src
-
-Update ~mu4e~ automatically, in the background.
-An icon displaying new Emails will appear in the doom modeline, if relevant.
-#+begin_src elisp
 (use-package! mu4e
+  :defer t
   :config
+  ;; Update ~mu4e~ automatically, in the background.
+  ;; An icon displaying new Emails will appear in the doom modeline, if relevant.
   (setq! mu4e-update-interval 300
          message-send-mail-function 'message-send-mail-with-sendmail
          )
-  )
-#+end_src
 
-Set the authentication source.
-#+begin_src elisp
-(setq! auth-sources '("~/.authinfo"))
+  (set-email-account!
+   "outlook"
+   '((mu4e-sent-folder       . "/Outlook/Sent")
+     (mu4e-drafts-folder     . "/Outlook/Drafts")
+     (mu4e-trash-folder      . "/Outlook/Deleted")
+     (mu4e-refile-folder     . "/Outlook/Inbox")
+     )
+   t
+   )
+  )
 #+end_src
 
 ** RSS
@@ -1515,9 +1509,7 @@ Use [[id:14940d40-8af3-4983-832b-4cd162b4e0c3][org-fragtog]] to immediately rend
 
 Use [[id:cf02b3ea-2a80-46e9-b804-2b101c33ff67][org-appear]] to reveal emphasis markes when moving the curser over them
 #+begin_src elisp
-(package! org-appear
-  :recipe (:host github
-           :repo "awth13/org-appear"))
+(package! org-appear)
 #+end_src
 
 Use [[id:41d896e4-12f0-46e0-9f19-96373229f371][org-roam-ui]] and unpin [[id:795e639f-cb14-4b5d-a475-ae29ffe67bdc][org-roam]], as is suggested in the documentation for org-roam-ui
@@ -1568,10 +1560,6 @@ Use [[id:41d896e4-12f0-46e0-9f19-96373229f371][org-roam-ui]] and unpin [[id:795e
 #+begin_src elisp
 (package! company-prescient)
 (package! vertico-prescient)
-#+end_src
-
-#+begin_src elisp
-(package! emacsql-sqlite3)
 #+end_src
 
 #+begin_src elisp
