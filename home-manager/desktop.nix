@@ -300,17 +300,6 @@ programs.doom-emacs = {
 
   # external dependencies that I don't want to install globally
   extraPackages = [
-    # emacs everywhere
-    pkgs.xorg.xwininfo
-    pkgs.xdotool
-    pkgs.xclip
-    # nix formatter
-    pkgs.nixfmt
-    # shell formatting / linting
-    pkgs.shfmt
-    pkgs.shellcheck
-    # C compiler e.g. to compile EmacSQL
-    pkgs.gcc
     # for the email client mu4e
     pkgs.mu
     pkgs.isync
@@ -321,7 +310,6 @@ programs.doom-emacs = {
   extraConfig = ''
     (setq! auth-sources '("${osConfig.age.secrets.authinfo.path}"))
     (setq! mu4e-mu-binary "${pkgs.mu}/bin/mu")
-    (setq! nix-nixfmt-bin "${pkgs.nixfmt}/bin/nixfmt")
   '';
 
   emacsPackagesOverlay = self: super: {
@@ -604,6 +592,16 @@ pkgs.vale
       limecv xstring titlesec textpos;
   });
 in tex) pkgs.biber pkgs.texlab
+
+# emacs everywhere
+pkgs.xorg.xwininfo
+pkgs.xdotool
+pkgs.xclip
+# nix formatter
+pkgs.nixfmt
+# shell formatting / linting
+pkgs.shfmt
+pkgs.shellcheck
 
 pkgs.feh
 pkgs.rofi
