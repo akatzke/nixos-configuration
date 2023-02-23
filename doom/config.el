@@ -453,6 +453,8 @@ to manually add one myself."
 
 (setq! +org-roam-auto-backlinks-buffer t)
 
+(setq! org-roam-file-exclude-regexp '(".stversions/.*"))
+
 (setq! org-roam-capture-templates
        '(
          ("d" "default" plain

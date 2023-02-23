@@ -1048,8 +1048,14 @@ Automatically synchronize the org-roam database
 (org-roam-db-autosync-mode)
 #+end_src
 
+Automatically show the org-roam backlinks buffer when opening org-roam notes.
 #+begin_src elisp
 (setq! +org-roam-auto-backlinks-buffer t)
+#+end_src
+
+Ignore copies of files created by [[id:5ce776fe-0e49-43de-a3e0-a183fdfe3e4e][Syncthing]].
+#+begin_src elisp
+(setq! org-roam-file-exclude-regexp '(".stversions/.*"))
 #+end_src
 
 All of the templates to use
