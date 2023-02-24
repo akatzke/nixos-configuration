@@ -74,7 +74,7 @@ nix.settings.auto-optimise-store = true;
 system.autoUpgrade = {
   enable = true;
   flake = "/etc/nixos";
-  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--update-input" "agenix" "--update-input" "nix-index-database" "--update-input" "nix-doom-emacs" ];
+  flags = [ "--update-input" "nixpkgs" "--update-input" "home-manager" "--update-input" "agenix" "--update-input" "nix-index-database" ];
 };
 
 boot = {
