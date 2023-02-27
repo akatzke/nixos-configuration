@@ -1078,10 +1078,10 @@ All of the templates to use
                    )
           :unnarrowed t
           )
-         ("s" "secret" plain
+         ("p" "private" plain
           "%?"
           :if-new (file+head
-                   "secrets/${slug}.org" ;; file-name
+                   "private/${slug}.org" ;; file-name
                    "#+title: ${title}\n#+filetags:\n\n" ;; meta-data
                    )
           :unnarrowed t
@@ -1392,7 +1392,6 @@ as it seems to be the most well maintained and feature-rich solution.
 (use-package org-fc
   :after org
   :custom
-  (org-fc-source-path "/home/yusu/git/org-fc")
   (org-fc-directories '("~/org-roam/"))
   ;; symmetrical fuzzy interval, larger than the default
   (org-fc-algo-sm2-fuzz-max 1.2)
@@ -1402,6 +1401,7 @@ as it seems to be the most well maintained and feature-rich solution.
   :config
   (require 'org-fc-keymap-hint)
   :init
+  (setq! org-fc-source-path "/home/yusu/git/org-fc")
   ;; set keys that were overridden by evil-mode
   ;; keys while viewing a prompt
   (evil-define-minor-mode-key 'normal 'org-fc-review-flip-mode

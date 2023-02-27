@@ -473,10 +473,10 @@ to manually add one myself."
                    )
           :unnarrowed t
           )
-         ("s" "secret" plain
+         ("p" "private" plain
           "%?"
           :if-new (file+head
-                   "secrets/${slug}.org" ;; file-name
+                   "private/${slug}.org" ;; file-name
                    "#+title: ${title}\n#+filetags:\n\n" ;; meta-data
                    )
           :unnarrowed t
@@ -698,7 +698,6 @@ are exported to a filename derived from the headline text."
 (use-package org-fc
   :after org
   :custom
-  (org-fc-source-path "/home/yusu/git/org-fc")
   (org-fc-directories '("~/org-roam/"))
   ;; symmetrical fuzzy interval, larger than the default
   (org-fc-algo-sm2-fuzz-max 1.2)
@@ -708,6 +707,7 @@ are exported to a filename derived from the headline text."
   :config
   (require 'org-fc-keymap-hint)
   :init
+  (setq! org-fc-source-path "/home/yusu/git/org-fc")
   ;; set keys that were overridden by evil-mode
   ;; keys while viewing a prompt
   (evil-define-minor-mode-key 'normal 'org-fc-review-flip-mode
