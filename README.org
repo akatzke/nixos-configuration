@@ -98,10 +98,11 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
   outputs = { self, nixpkgs, home-manager, agenix, nix-index-database
-    , nix-doom-emacs, nixos-generators, ... }: {
+    , nix-doom-emacs, nixos-generators, nixos-hardware, ... }: {
       nixosConfigurations = {
         hephaestus = let
           system = "x86_64-linux";
@@ -109,8 +110,13 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            nixos-hardware.nixosModules.common-cpu-intel-kaby-lake
+            nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
+
             ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
+            ./system-configuration/non-iso.nix
+            ./system-configuration/uefi-boot.nix
             ./system-configuration/desktop.nix
             ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
@@ -144,8 +150,12 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            nixos-hardware.nixosModules.common-gpu-nvidia
+
             ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
+            ./system-configuration/non-iso.nix
+            ./system-configuration/uefi-boot.nix
             ./system-configuration/desktop.nix
             ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
@@ -180,7 +190,9 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
           inherit system;
           modules = [
             ./hardware-configuration/${hostName}.nix
+            nixos-hardware.nixosModules.raspberry-pi-4
             ./system-configuration/core.nix
+            ./system-configuration/non-iso.nix
             ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
@@ -232,7 +244,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
                 [ agenix.packages."${system}".default ];
             }
           ];
-          format = "iso";
+          format = "install-iso";
         };
       };
     };
@@ -275,6 +287,14 @@ Set up the system-configuration files that shall be generated:
 #+end_src
 
 #+begin_src nix :noweb yes :tangle system-configuration/sisyphus.nix
+<<system-config-preamble>>
+#+end_src
+
+#+begin_src nix :noweb yes :tangle system-configuration/non-iso.nix
+<<system-config-preamble>>
+#+end_src
+
+#+begin_src nix :noweb yes :tangle system-configuration/uefi-boot.nix
 <<system-config-preamble>>
 #+end_src
 
@@ -338,7 +358,7 @@ system.stateVersion = "22.11"; # Did you read the comment?
 ** Bootloader & Kernel
 Configure the bootloader.
 If the timeout set here is not being respected within the ~UEFI~ boot menu, press [[kbd:][Shift-t]] until a message appears that says that the timeout is being determined by the configuration file.
-#+begin_src nix :tangle system-configuration/hephaestus.nix
+#+begin_src nix :tangle system-configuration/uefi-boot.nix
 boot.loader = {
   timeout = 2;
 
@@ -346,26 +366,6 @@ boot.loader = {
   systemd-boot.enable = true;
   efi.canTouchEfiVariables = false;
   efi.efiSysMountPoint = "/boot/efi";
-};
-#+end_src
-#+begin_src nix :tangle system-configuration/orpheus.nix
-boot.loader = {
-  timeout = 2;
-
-  # use UEFI
-  systemd-boot.enable = true;
-  efi.canTouchEfiVariables = false;
-  efi.efiSysMountPoint = "/boot/efi";
-
-  # use GRUB
-  # grub = {
-  #   enable = true;
-  #   version = 2;
-  #   device = "/dev/sda";
-  #   theme = pkgs.nixos-grub2-theme;
-  #   # whether to have grub probe for other devices to boot from (e.g. windows)
-  #   useOSProber = false;
-  # };
 };
 #+end_src
 For =sisyphus=, use ~U-Boot~ instead.
@@ -431,7 +431,7 @@ boot.initrd.secrets = {
 
 ** Networking
 Networking configuration
-#+begin_src nix
+#+begin_src nix :tangle system-configuration/non-iso.nix
 networking = {
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -442,11 +442,6 @@ networking = {
   # Enable networking
   networkmanager.enable = true;
 };
-
-
-# Enable the OpenSSH daemon.
-# services.openssh.enable = true;
-
 #+end_src
 
 Enable the ~nix~ firewall module.
@@ -766,7 +761,6 @@ swapDevices = [
 ** Graphics Card & Gaming
 Enable the proprietary Nvidia drivers, following https://nixos.wiki/wiki/Nvidia
 #+begin_src nix :tangle system-configuration/hephaestus.nix
-services.xserver.videoDrivers = [ "nvidia" ];
 hardware.opengl.enable = true;
 hardware.nvidia.powerManagement.enable = true;
 hardware.nvidia.modesetting.enable = true;
@@ -1050,7 +1044,7 @@ users.users.${user} = {
 #+end_src
 
 Disable login into =root= user.
-#+begin_src nix
+#+begin_src nix :tangle system-configuration/non-iso.nix
 users.users.root.hashedPassword = "!";
 #+end_src
 
@@ -1061,10 +1055,11 @@ services.getty.autologinUser = "${user}";
 
 ** SSH
 #+begin_src nix
-services.openssh = {
-  enable = true;
-  permitRootLogin = "no";
-};
+services.openssh.enable = true;
+#+end_src
+
+#+begin_src nix :tangle system-configuration/non-iso.nix
+services.openssh.permitRootLogin = "no";
 #+end_src
 
 #+begin_src nix :tangle system-configuration/desktop.nix
@@ -1325,6 +1320,14 @@ services.languagetool = {
 #+end_src
 
 #+begin_src nix :tangle system-configuration/sisyphus.nix
+}
+#+end_src
+
+#+begin_src nix :tangle system-configuration/non-iso.nix
+}
+#+end_src
+
+#+begin_src nix :tangle system-configuration/uefi-boot.nix
 }
 #+end_src
 

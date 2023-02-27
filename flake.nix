@@ -23,10 +23,11 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
   outputs = { self, nixpkgs, home-manager, agenix, nix-index-database
-    , nix-doom-emacs, nixos-generators, ... }: {
+    , nix-doom-emacs, nixos-generators, nixos-hardware, ... }: {
       nixosConfigurations = {
         hephaestus = let
           system = "x86_64-linux";
@@ -34,8 +35,13 @@
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            nixos-hardware.nixosModules.common-cpu-intel-kaby-lake
+            nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
+
             ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
+            ./system-configuration/non-iso.nix
+            ./system-configuration/uefi-boot.nix
             ./system-configuration/desktop.nix
             ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
@@ -69,8 +75,12 @@
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            nixos-hardware.nixosModules.common-gpu-nvidia
+
             ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
+            ./system-configuration/non-iso.nix
+            ./system-configuration/uefi-boot.nix
             ./system-configuration/desktop.nix
             ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
@@ -105,7 +115,9 @@
           inherit system;
           modules = [
             ./hardware-configuration/${hostName}.nix
+            nixos-hardware.nixosModules.raspberry-pi-4
             ./system-configuration/core.nix
+            ./system-configuration/non-iso.nix
             ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
@@ -157,7 +169,7 @@
                 [ agenix.packages."${system}".default ];
             }
           ];
-          format = "iso";
+          format = "install-iso";
         };
       };
     };

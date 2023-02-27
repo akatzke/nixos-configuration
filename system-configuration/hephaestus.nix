@@ -8,15 +8,6 @@ networking.hostName = "hephaestus"; # Define your hostname.
 
 system.stateVersion = "22.05"; # Did you read the comment?
 
-boot.loader = {
-  timeout = 2;
-
-  # use UEFI
-  systemd-boot.enable = true;
-  efi.canTouchEfiVariables = false;
-  efi.efiSysMountPoint = "/boot/efi";
-};
-
 services.mullvad-vpn.enable = true;
 
 services.xserver.displayManager.defaultSession = "none+qtile";
@@ -44,7 +35,6 @@ fileSystems."/mnt/HDD" = {
   options = [ "defaults" "x-systemd.automount" "noauto" ];
 };
 
-services.xserver.videoDrivers = [ "nvidia" ];
 hardware.opengl.enable = true;
 hardware.nvidia.powerManagement.enable = true;
 hardware.nvidia.modesetting.enable = true;
