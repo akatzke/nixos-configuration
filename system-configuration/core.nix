@@ -98,6 +98,7 @@ services.syncthing.devices = import ../syncthing/devices.nix;
 # Define a user account. Don't forget to set a password with ‘passwd’.
 users.users.${user} = {
   isNormalUser = true;
+  initialPassword = "password";
   description = "${user}";
   extraGroups = [ "networkmanager" "wheel" ];
   shell = pkgs.fish;

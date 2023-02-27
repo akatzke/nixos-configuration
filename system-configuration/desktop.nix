@@ -4,25 +4,6 @@ let
   user = "yusu";
 in {
 
-boot.loader = {
-  timeout = 2;
-
-  # use UEFI
-  systemd-boot.enable = true;
-  efi.canTouchEfiVariables = false;
-  efi.efiSysMountPoint = "/boot/efi";
-
-  # use GRUB
-  # grub = {
-  #   enable = true;
-  #   version = 2;
-  #   device = "/dev/sda";
-  #   theme = pkgs.nixos-grub2-theme;
-  #   # whether to have grub probe for other devices to boot from (e.g. windows)
-  #   useOSProber = false;
-  # };
-};
-
 boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
 boot.kernelModules = [

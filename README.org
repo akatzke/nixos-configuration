@@ -94,21 +94,25 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
       url = "github:nix-community/nix-doom-emacs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, agenix, nix-index-database
-    , nix-doom-emacs }: {
+    , nix-doom-emacs, nixos-generators, ... }: {
       nixosConfigurations = {
         hephaestus = let
           system = "x86_64-linux";
-          hostname = "hephaestus";
+          hostName = "hephaestus";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration/${hostname}.nix
+            ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
             ./system-configuration/desktop.nix
-            ./system-configuration/${hostname}.nix
+            ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -118,7 +122,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
                   imports = [
                     ./home-manager/core.nix
                     ./home-manager/desktop.nix
-                    ./home-manager/${hostname}.nix
+                    ./home-manager/${hostName}.nix
                   ];
                 };
                 sharedModules = [
@@ -136,14 +140,14 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
         };
         orpheus = let
           system = "x86_64-linux";
-          hostname = "orpheus";
+          hostName = "orpheus";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration/${hostname}.nix
+            ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
             ./system-configuration/desktop.nix
-            ./system-configuration/${hostname}.nix
+            ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -153,7 +157,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
                   imports = [
                     ./home-manager/core.nix
                     ./home-manager/desktop.nix
-                    ./home-manager/${hostname}.nix
+                    ./home-manager/${hostName}.nix
                   ];
                 };
                 sharedModules = [
@@ -171,13 +175,13 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
         };
         sisyphus = let
           system = "aarch64-linux";
-          hostname = "sisyphus";
+          hostName = "sisyphus";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration/${hostname}.nix
+            ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
-            ./system-configuration/${hostname}.nix
+            ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -185,7 +189,7 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
                 useUserPackages = true;
                 users.yusu = { ... }: {
                   imports =
-                    [ ./home-manager/core.nix ./home-manager/${hostname}.nix ];
+                    [ ./home-manager/core.nix ./home-manager/${hostName}.nix ];
                 };
                 sharedModules = [ nix-index-database.nixosModules.nix-index ];
               };
@@ -196,6 +200,39 @@ While ~Nix Flakes~ are still considered "experimental", they are widely used by 
                 [ agenix.packages."${system}".default ];
             }
           ];
+        };
+      };
+
+      packages.x86_64-linux = let system = "x86_64-linux";
+      in {
+        desktop-iso = nixos-generators.nixosGenerate {
+          inherit system;
+          modules = [
+            ./system-configuration/core.nix
+            ./system-configuration/desktop.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = { ... }: {
+                  imports =
+                    [ ./home-manager/core.nix ./home-manager/desktop.nix ];
+                  home.stateVersion = "22.11";
+                };
+                sharedModules = [
+                  nix-index-database.nixosModules.nix-index
+                  nix-doom-emacs.hmModule
+                ];
+              };
+            }
+            agenix.nixosModules.default
+            {
+              environment.systemPackages =
+                [ agenix.packages."${system}".default ];
+            }
+          ];
+          format = "iso";
         };
       };
     };
@@ -301,7 +338,17 @@ system.stateVersion = "22.11"; # Did you read the comment?
 ** Bootloader & Kernel
 Configure the bootloader.
 If the timeout set here is not being respected within the ~UEFI~ boot menu, press [[kbd:][Shift-t]] until a message appears that says that the timeout is being determined by the configuration file.
-#+begin_src nix :tangle system-configuration/desktop.nix
+#+begin_src nix :tangle system-configuration/hephaestus.nix
+boot.loader = {
+  timeout = 2;
+
+  # use UEFI
+  systemd-boot.enable = true;
+  efi.canTouchEfiVariables = false;
+  efi.efiSysMountPoint = "/boot/efi";
+};
+#+end_src
+#+begin_src nix :tangle system-configuration/orpheus.nix
 boot.loader = {
   timeout = 2;
 
@@ -992,6 +1039,7 @@ services.udev.packages = [
 # Define a user account. Don't forget to set a password with ‘passwd’.
 users.users.${user} = {
   isNormalUser = true;
+  initialPassword = "password";
   description = "${user}";
   extraGroups = [ "networkmanager" "wheel" ];
   shell = pkgs.fish;

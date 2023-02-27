@@ -19,21 +19,25 @@
       url = "github:nix-community/nix-doom-emacs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, agenix, nix-index-database
-    , nix-doom-emacs }: {
+    , nix-doom-emacs, nixos-generators, ... }: {
       nixosConfigurations = {
         hephaestus = let
           system = "x86_64-linux";
-          hostname = "hephaestus";
+          hostName = "hephaestus";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration/${hostname}.nix
+            ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
             ./system-configuration/desktop.nix
-            ./system-configuration/${hostname}.nix
+            ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -43,7 +47,7 @@
                   imports = [
                     ./home-manager/core.nix
                     ./home-manager/desktop.nix
-                    ./home-manager/${hostname}.nix
+                    ./home-manager/${hostName}.nix
                   ];
                 };
                 sharedModules = [
@@ -61,14 +65,14 @@
         };
         orpheus = let
           system = "x86_64-linux";
-          hostname = "orpheus";
+          hostName = "orpheus";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration/${hostname}.nix
+            ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
             ./system-configuration/desktop.nix
-            ./system-configuration/${hostname}.nix
+            ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -78,7 +82,7 @@
                   imports = [
                     ./home-manager/core.nix
                     ./home-manager/desktop.nix
-                    ./home-manager/${hostname}.nix
+                    ./home-manager/${hostName}.nix
                   ];
                 };
                 sharedModules = [
@@ -96,13 +100,13 @@
         };
         sisyphus = let
           system = "aarch64-linux";
-          hostname = "sisyphus";
+          hostName = "sisyphus";
         in nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ./hardware-configuration/${hostname}.nix
+            ./hardware-configuration/${hostName}.nix
             ./system-configuration/core.nix
-            ./system-configuration/${hostname}.nix
+            ./system-configuration/${hostName}.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -110,7 +114,7 @@
                 useUserPackages = true;
                 users.yusu = { ... }: {
                   imports =
-                    [ ./home-manager/core.nix ./home-manager/${hostname}.nix ];
+                    [ ./home-manager/core.nix ./home-manager/${hostName}.nix ];
                 };
                 sharedModules = [ nix-index-database.nixosModules.nix-index ];
               };
@@ -121,6 +125,39 @@
                 [ agenix.packages."${system}".default ];
             }
           ];
+        };
+      };
+
+      packages.x86_64-linux = let system = "x86_64-linux";
+      in {
+        desktop-iso = nixos-generators.nixosGenerate {
+          inherit system;
+          modules = [
+            ./system-configuration/core.nix
+            ./system-configuration/desktop.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.yusu = { ... }: {
+                  imports =
+                    [ ./home-manager/core.nix ./home-manager/desktop.nix ];
+                  home.stateVersion = "22.11";
+                };
+                sharedModules = [
+                  nix-index-database.nixosModules.nix-index
+                  nix-doom-emacs.hmModule
+                ];
+              };
+            }
+            agenix.nixosModules.default
+            {
+              environment.systemPackages =
+                [ agenix.packages."${system}".default ];
+            }
+          ];
+          format = "iso";
         };
       };
     };
