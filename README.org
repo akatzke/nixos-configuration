@@ -1421,6 +1421,7 @@ xdg.configFile."scripts" = {
 ** XDG MIME Applications
 Associate applications with file types and set default applications.
 #+begin_src nix :tangle home-manager/desktop.nix
+xdg.enable = true;
 xdg.mimeApps = {
   enable = true;
   associations = {
@@ -1432,6 +1433,8 @@ xdg.mimeApps = {
       "text/plain" = "emacsclient.desktop";
       "x-scheme-handler/mailto" = "thunderbird.desktop";
       "x-scheme-handler/mid" = "thunderbird.desktop";
+      "x-scheme-handler/http"="librewolf.desktop";
+      "x-scheme-handler/https"="librewolf.desktop";
     };
   };
   defaultApplications = {
@@ -1444,6 +1447,8 @@ xdg.mimeApps = {
     "x-scheme-handler/mailto"="thunderbird.desktop";
     "x-scheme-handler/mid"="thunderbird.desktop";
     "x-scheme-handler/msteams"="teams-for-linux.desktop";
+    "x-scheme-handler/http"="librewolf.desktop";
+    "x-scheme-handler/https"="librewolf.desktop";
   };
 };
 #+end_src

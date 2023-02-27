@@ -11,6 +11,7 @@ home = {
   ];
 };
 
+xdg.enable = true;
 xdg.mimeApps = {
   enable = true;
   associations = {
@@ -22,6 +23,8 @@ xdg.mimeApps = {
       "text/plain" = "emacsclient.desktop";
       "x-scheme-handler/mailto" = "thunderbird.desktop";
       "x-scheme-handler/mid" = "thunderbird.desktop";
+      "x-scheme-handler/http"="librewolf.desktop";
+      "x-scheme-handler/https"="librewolf.desktop";
     };
   };
   defaultApplications = {
@@ -34,6 +37,8 @@ xdg.mimeApps = {
     "x-scheme-handler/mailto"="thunderbird.desktop";
     "x-scheme-handler/mid"="thunderbird.desktop";
     "x-scheme-handler/msteams"="teams-for-linux.desktop";
+    "x-scheme-handler/http"="librewolf.desktop";
+    "x-scheme-handler/https"="librewolf.desktop";
   };
 };
 
