@@ -773,7 +773,6 @@ def autostart():
                     f"{HOME}/Pictures/Wallpaper/normal.png",
                 ],
                 ["element-desktop"],
-                ["discord"],
                 ["steam-run", f"{HOME}/Downloads/activitywatch/aw-qt"],
                 ["emacs", "--daemon"],
             ]
