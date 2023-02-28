@@ -2,7 +2,7 @@ import os
 import re
 import socket
 import subprocess
-import time
+import asyncio
 from libqtile import qtile
 from libqtile.config import Click, Drag, Group, KeyChord, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
@@ -38,24 +38,24 @@ layouts.append(
 
 layouts.append(layout.RatioTile(fancy=True, margin=default_margin // 2, **default_layout_theme))
 
-left_keys = ["period", "p", "y", "e", "u", "i"]
-right_keys = ["g", "c", "r", "t", "n"]
+left_keys = ["1", "2", "3", "4", "5", "6"]
+right_keys = ["q", "w", "e", "r", "z"]
 group_keys = left_keys + right_keys
 groups = [
     # left groups
     Group(
         name=group_keys[0],
-        label=",",
+        label="Messengers",
         layout="ratiotile",
         matches=[
-            Match(wm_class=["Telegram", "Slack", "Mattermost", "Signal", "Element"]),
+            Match(wm_class=["Telegram", "Slack", "Mattermost", "Signal", "Element", "Microsoft Teams"]),
         ],
     ),
-    Group(name=group_keys[1], label="P", layout="monadthreecol"),
-    Group(name=group_keys[2], label="Y", layout="monadthreecol"),
-    Group(name=group_keys[3], label="E", layout="monadthreecol"),
-    Group(name=group_keys[4], label="U", layout="monadthreecol"),
-    Group(name=group_keys[5], label="I", layout="monadthreecol"),
+    Group(name=group_keys[1], label="Com", layout="monadthreecol"),
+    Group(name=group_keys[2], label="Programming 1", layout="monadthreecol"),
+    Group(name=group_keys[3], label="Programming 2", layout="monadthreecol"),
+    Group(name=group_keys[4], label="Stuff", layout="monadthreecol"),
+    Group(name=group_keys[5], label="Music", layout="monadthreecol"),
     # right groups
     Group(name=group_keys[6], label="G", layout="monadtall"),
     Group(name=group_keys[7], label="C", layout="monadtall"),
@@ -204,7 +204,7 @@ keys.extend(
             lazy.spawn(my_term),
             desc="Terminal"),
         Key([mod], "a",
-            lazy.spawn("emacsclient -c -a 'emacs' --eval '(org-agenda-list)'"),
+            lazy.spawn("emacsclient -c -a 'emacs'"),
             desc="Launch Emacs"),
         Key([mod], "b",
             lazy.spawn(my_browser),
@@ -301,8 +301,9 @@ scratchpads.append(
 )
 
 @hook.subscribe.startup_complete
-def autostart_scratchpads():
-    time.sleep(5)
+async def autostart_scratchpads():
+    await asyncio.sleep(2)
+
     for scratchpad in scratchpads:
         # skip nixos rebuild for obvious reasons
         # and mail, as it will require the unlocking of my password manager
@@ -699,11 +700,11 @@ def init_widgets(show_systray=True):
     return list(filter(None, widgets))
 
 def init_widgets_screen1():
-    widgets_screen1 = init_widgets(show_systray=False)
+    widgets_screen1 = init_widgets(show_systray=True)
     return widgets_screen1
 
 def init_widgets_screen2():
-    widgets_screen2 = init_widgets(show_systray=True)
+    widgets_screen2 = init_widgets(show_systray=False)
     return widgets_screen2
 
 def init_screens():
@@ -759,7 +760,7 @@ def autostart():
                 [
                     "feh",
                     "--bg-fill",
-                    f"{HOME}/Pictures/Wallpaper/ultrawide.jpg",
+                    f"{HOME}/Pictures/Wallpaper/Forest.jpg",
                     "--bg-fill",
                     f"{HOME}/Pictures/Wallpaper/normal.png",
                 ],
